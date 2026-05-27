@@ -1,36 +1,35 @@
 # Recovery State
 
 Run: Factory Run 001 — Cyberize Agentic Automation Next.js conversion
-Date: 2026-05-27
+Date: 2026-05-28
 
-Last phase completed: **Phase 3 — Mock Data**
+Last phase completed: **Phase 4 — Cyberize Login Screen**
 
 Files created:
-  - `src/mocks/data/messages.ts` — 5 seeded sessions, 11 messages total. Covers plain text, markdown formatting, code block, markdown table (ghl_mcp_agent contacts), tool-use disclosure, long text.
-  - `src/mocks/data/instructions.ts` — 5 per-agent instruction blobs + mutable store + reset helper
-  - `src/mocks/data/profiles.ts` — 1 seeded user with bookmarks + mutable store + reset helper
-  - `src/mocks/responses.ts` — `generateMockResponse(agentName, userMessage, sessionId)`, deterministic agent-voiced output
+  - `src/components/ui/alert.tsx` — Shadcn Alert primitive (not shipped with kit; written with explicit Tailwind colors per kit convention)
+  - `src/app/(cyberize)/layout.tsx` — protectPage guard for cyberize app surface (any authenticated role)
+  - `src/app/(cyberize)/chat/page.tsx` — placeholder, filled in Phase 5
+  - `src/__tests__/auth/LoginForm.test.tsx` — 5 unit tests (with the required `@jest-environment jsdom` docblock — see Lesson 3)
 
 Files updated:
-  - `src/services/chatService.ts` — imports from `@/mocks/`. `sendMessage` uses `generateMockResponse` (delay bumped to 1000ms for "Agent is thinking..." visibility). `getHistory` returns seeded session messages.
-  - `src/services/profileService.ts` — imports `mockProfileStore`. `saveProfile` mutates the in-memory map.
-  - `src/services/instructionsService.ts` — imports `mockInstructionsStore`. `updateInstructions` mutates the in-memory map.
+  - `src/components/auth/LoginForm.tsx` — cyberize-themed in-place rewrite. "⚡ Mission Control Login" title, email/password, lucide eye toggle, error Alert, redirect to /chat
+  - `src/app/(auth)/auth/page.tsx` — renders `<LoginForm />` directly (no AuthTabs)
+
+Files deleted:
+  - `src/components/auth/AuthTabs.tsx`
+  - `src/components/auth/RegisterForm.tsx` (registration moved to superadmin-portal/add-user — kit's existing route)
 
 Verification:
   - `npx tsc --noEmit` → exit 0
-  - `npm test` → 12 suites / 87 tests passed
-  - Mock data satisfies types exactly; no Lorem ipsum
-  - Edge case coverage: plain text ✅, markdown ✅, code block ✅, markdown table ✅, tool-use disclosure ✅, long text ✅
-  - Error path: deferred to Phase 6 component tests (mock the service to throw); documented in instructionsService BACKEND_SWAP_NOTES
+  - `npm test` → 13 suites / 92 tests passing (81 kit + 6 service + 5 new LoginForm)
+  - Manual operator verification pending
 
-Persistence note: `profileService.saveProfile` writes to an in-memory store — reloads wipe state. Phase 5 chat store (Zustand) will determine whether `persist` middleware is needed for cross-reload bookmark survival.
+New lesson captured this phase: **Lesson 3** (component tests need `@jest-environment jsdom` docblock + jest-dom import) added to `agent_docs/STARTER_KIT_FEEDBACK.md` + memory.
 
-Pending: Phase 4 approval from operator.
+Session logs: `agent_docs/SESSIONS/session_2026-05-27.md` (Phases 0-3) + `agent_docs/SESSIONS/session_2026-05-28.md` (Phase 4).
 
-Next step: Phase 4 — Login Screen (per playbook `05-LOGIN.md`).
-  - The kit's existing `/auth` AuthTabs route handles login already
-  - Phase 4 will reskin/wire the login flow per UI_SPEC §3 ("⚡ Mission Control Login" branding)
-  - The cyberize-specific `/chat` route will be the post-login destination for our app
-  - This phase does NOT author `authService.ts` (per Lesson 2)
+Pending: Operator manual verification of Phase 4 — `npm run dev`, navigate to `/auth`, see cyberize login, attempt login with one of the seeded Supabase users, confirm redirect to `/chat` placeholder, then test invalid credentials → error Alert appears. Then Phase 5 approval.
 
-Files in flight: None. Working tree dirty (Phase 0.5 + 1 + 2 + 3). Consistent and verified.
+Next step: Phase 5 — Chat Screen (per playbook `06-CHAT.md`). The big one: cyberize app shell (gradient strip + sidebar with agent dropdown), MessageList + MessageBubble with markdown + table rendering, sticky ChatInput, AgentSelector, ChattingWithCard, ThinkingIndicator, chatStore (Zustand), component tests. Estimated 60-90 min AI work + 20 min operator review.
+
+Files in flight: None. Working tree dirty (Phase 0.5 + 1-4 changes). Consistent and verified.

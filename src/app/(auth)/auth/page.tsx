@@ -1,14 +1,10 @@
 "use client";
 
-import AuthTabs from "@/components/auth/AuthTabs";
+import LoginForm from "@/components/auth/LoginForm";
 import React from "react";
 
 const AuthPage = () => {
-  return (
-    <>
-      <AuthTabs />
-    </>
-  );
+  return <LoginForm />;
 };
 
 export default AuthPage;

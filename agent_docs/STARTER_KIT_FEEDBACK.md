@@ -30,6 +30,28 @@
 
 ---
 
+### Lesson 3 — Component tests need `@jest-environment jsdom` + `@testing-library/jest-dom`
+
+**Rule:** Every `.test.tsx` file that renders a React component MUST start with the `@jest-environment jsdom` docblock as its first comment, then `import "@testing-library/jest-dom"` before any other testing-library imports. The kit's `jest.config.js` defaults `testEnvironment` to `node` globally.
+
+**Why (Run 001):** In Phase 4, I authored `LoginForm.test.tsx` without the docblock. Suite failed with `Cannot read properties of undefined (reading 'navigator')` at `@testing-library/user-event`'s clipboard module setup — that module needs `window.navigator`, which doesn't exist in the node env. Other kit component tests already follow this convention (see `src/__tests__/admin/AddMemberForm.test.tsx`); I missed it because the convention isn't documented elsewhere.
+
+**How to apply:** Boilerplate at the top of every component test:
+
+```typescript
+/**
+ * @jest-environment jsdom
+ */
+
+import "@testing-library/jest-dom";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+```
+
+Pure-function tests (`.test.ts`) — server actions, utilities, no React rendering — keep the default node env. No docblock needed for those.
+
+---
+
 ## 🟡 Doc Drift: `STARTER_PROJECT_OVERVIEW.md` Calls Middleware `middleware.ts`, But Next.js 16 Renamed It
 
 **Symptom:** `STARTER_PROJECT_OVERVIEW.md` line 26 says: *"`src/middleware.ts` — calls `updateSession(request)` on every request"*. The actual file in the kit is `src/proxy.ts`. Reading the doc first, then the kit, I diagnosed this as a misnaming bug and proposed renaming `proxy.ts` → `middleware.ts`. **I was wrong.**

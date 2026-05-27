@@ -1,149 +1,125 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Spinner from "@/components/common/Spinner";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
+
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
-import { useState } from "react";
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import Spinner from "@/components/common/Spinner";
 import { useAuthStore } from "@/store/useAuthStore";
 
-const formSchema = z.object({
-  email: z
-    .string()
-    .min(1, {
-      message: "Email is required",
-    })
-    .email({
-      message: "Please enter a valid email",
-    }),
-  password: z.string().min(1, {
-    message: "Password is required",
-  }),
-});
-
 const LoginForm = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
   const login = useAuthStore((state) => state.login);
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError(null);
     setIsLoading(true);
 
-    // Use .catch() instead of try/catch — prevents React 18 dev overlay from
-    // intercepting the rejected promise before our handler processes it
-    const redirectPath = await login(data.email, data.password).catch((err: Error) => {
-      setError(err.message || "Login failed. Please try again.");
+    // .catch() pattern (per STARTER_PROJECT_OVERVIEW Key Patterns) — Next.js
+    // dev overlay intercepts thrown errors before try/catch can handle them.
+    const result = await login(email, password).catch((err: Error) => {
+      setError(err.message || "Authentication failed. Please try again.");
       setIsLoading(false);
       return null;
     });
 
-    if (!redirectPath) return;
+    if (!result) return;
 
+    // Discard the kit's role-based redirect (`/superadmin-portal`, `/admin-portal`,
+    // `/members-portal`). For the cyberize app, every authenticated user lands on /chat.
     router.refresh();
-    router.push(redirectPath);
+    router.push("/chat");
   };
 
   return (
-    <>
+    <div className="w-full max-w-md mx-auto px-4">
+      <h1 className="text-3xl font-bold text-center mb-6">
+        ⚡ Mission Control Login
+      </h1>
+
       <Card>
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
-          <CardDescription>
-            Log into your account with your credentials
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-8"
-            >
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text.white">
-                      Email
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        className="p-6 bg-slate-100 dark:bg-slate-500 dark:text-white"
-                        placeholder="Please Enter Email"
-                        {...field}
-                      />
-                    </FormControl>
-
-                    <FormMessage className="dark:text-red-300" />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text.white">
-                      Password
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        className="p-6 bg-slate-100 dark:bg-slate-500 dark:text-white"
-                        placeholder="Please Enter password"
-                        {...field}
-                      />
-                    </FormControl>
-
-                    <FormMessage className="dark:text-red-300" />
-                  </FormItem>
-                )}
-              />
-              {error && (
-                <div className="text-red-500 dark:text-red-300 text-sm mt-2">
-                  {error}
-                </div>
-              )}
-              {isLoading && <Spinner />}
-              <Button
+        <CardContent className="pt-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
-                className="w-full bg-slate-700 text-white dark:bg-slate-600 dark:text-white hover:bg-gray-900 disabled:opacity-70"
-              >
-                Login
-              </Button>
-            </form>
-          </Form>
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
+                  disabled={isLoading}
+                  autoComplete="current-password"
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {passwordFocused && (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Press Enter to submit form
+                </p>
+              )}
+            </div>
+
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-slate-700 text-white hover:bg-gray-900 dark:bg-slate-600 disabled:opacity-70"
+            >
+              {isLoading ? <Spinner /> : "Authenticate"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 };
 
