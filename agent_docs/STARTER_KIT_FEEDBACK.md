@@ -6,6 +6,30 @@
 
 ---
 
+## 🧠 Agent Lessons (Read Before Starting Work)
+
+> These are behavioral rules learned from real mistakes during Factory runs. Read them BEFORE Phase 0 Discovery. They save time and trust.
+
+### Lesson 1 — Framework conventions: code-on-disk + framework docs > stale kit docs
+
+**Rule:** When the kit's documentation references a framework file/function name that doesn't match the on-disk code, check the framework's current docs FIRST. Don't diagnose it as a misnaming bug.
+
+**Why (Run 001):** I read `STARTER_PROJECT_OVERVIEW.md` line 26 saying `src/middleware.ts`, found `src/proxy.ts` on disk, and proposed renaming as a "critical bug." Wrong — Next.js 16 renamed the convention (`middleware` → `proxy`). The kit was correct; the doc was stale relative to the kit's actual Next.js 16 baseline. Had to revert mid-Phase-0.5 and rewrite the feedback note.
+
+**How to apply:** For ANY doc-vs-code discrepancy involving framework conventions (file names, export names, folder structures), open the framework's official docs for the in-use version before declaring a bug or proposing a rename. Kit overview docs can lag the actual baseline by a major framework version.
+
+---
+
+### Lesson 2 — The kit's auth is complete; don't wrap it in a service
+
+**Rule:** Do NOT author `src/services/authService.ts` as a wrapper around the kit's existing auth stack. UI components consume the kit's auth primitives directly: `useAuthStore`, `src/utils/supabase/client.ts`, `/api/auth/*` routes, `protectPage` guard.
+
+**Why (Run 001):** The Factory module's DATA_CONTRACT §2.1 prescribed an `authService` with `signIn/signOut/getCurrentUser`. I drafted a Phase 2 plan to author it as a wrapper. Tony pushed back as I was about to write the file — the kit already has complete tested auth (Supabase SSR + RBAC + RLS + DB trigger + three working portals). A service wrapper would be pure indirection without abstraction value. The DATA_CONTRACT spec was generic; it didn't know how complete the kit's auth would be.
+
+**How to apply:** Before authoring any service the DATA_CONTRACT prescribes — especially auth-adjacent — check what the kit already provides as wired infrastructure. If the kit provides it: components consume the kit's primitives directly. Service layer is reserved for what the kit does NOT provide (chat, agent profiles, agent instructions, domain operations). On this kit, treat DATA_CONTRACT §2.1 (`authService`) as satisfied by kit infrastructure.
+
+---
+
 ## 🟡 Doc Drift: `STARTER_PROJECT_OVERVIEW.md` Calls Middleware `middleware.ts`, But Next.js 16 Renamed It
 
 **Symptom:** `STARTER_PROJECT_OVERVIEW.md` line 26 says: *"`src/middleware.ts` — calls `updateSession(request)` on every request"*. The actual file in the kit is `src/proxy.ts`. Reading the doc first, then the kit, I diagnosed this as a misnaming bug and proposed renaming `proxy.ts` → `middleware.ts`. **I was wrong.**

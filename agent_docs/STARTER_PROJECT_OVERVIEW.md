@@ -342,14 +342,17 @@ docs/
 ## Agent Working Rules
 
 1. Read `RECOVERY.md` first — 3-second context recovery
-2. Read latest file in `agent_docs/SESSIONS/` — full session history
-3. Follow Plan Mode protocol per `CLAUDE.md` — plan → approval → execute
-4. Use `createAdminClient()` for portal operations, `createClient()` for own-user operations
-5. Preserve auth, RBAC, and route guard infrastructure unless the task explicitly requires changing it
-6. Run `npm test` after every implementation — 81/81 must stay green
-7. Update `RECOVERY.md` and the session file after every completed task
-8. Do NOT add `superadmin` as a selectable role in any form
-9. Do NOT use shadcn CSS variables — use explicit Tailwind color classes
+2. Read `agent_docs/STARTER_KIT_FEEDBACK.md` "Agent Lessons" section — behavioral rules from prior runs (saves you from repeating mistakes)
+3. Read latest file in `agent_docs/SESSIONS/` — full session history
+4. Follow Plan Mode protocol per `CLAUDE.md` — plan → approval → execute
+5. Use `createAdminClient()` for portal operations, `createClient()` for own-user operations
+6. Preserve auth, RBAC, and route guard infrastructure unless the task explicitly requires changing it
+7. Run `npm test` after every implementation — 81/81 must stay green
+8. Update `RECOVERY.md` and the session file after every completed task
+9. Do NOT add `superadmin` as a selectable role in any form
+10. Do NOT use shadcn CSS variables — use explicit Tailwind color classes
+11. **Framework conventions:** if kit docs and on-disk code disagree on file/export names, check the framework's CURRENT docs first — the kit may be ahead of the doc (e.g., Next.js 16 renamed `middleware.ts` → `proxy.ts`). Don't diagnose as misnaming.
+12. **Auth is complete — do NOT author `src/services/authService.ts`.** The kit provides full auth via `useAuthStore` + Supabase client + `/api/auth/*` routes + `protectPage`. UI components consume these directly. Service layer is for what the kit does NOT provide (chat, agent data, etc.).
 
 ---
 
