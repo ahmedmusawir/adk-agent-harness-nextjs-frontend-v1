@@ -9,7 +9,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
-import { LayoutDashboard, Newspaper, User } from "lucide-react";
+import { LayoutDashboard, MessageSquare, User } from "lucide-react";
 import Link from "next/link";
 
 const Sidebar = () => {
@@ -24,8 +24,8 @@ const Sidebar = () => {
             <Link href="/members-portal">Dashboard</Link>
           </CommandItem>
           <CommandItem>
-            <Newspaper className="mr-2 h-4 w-4" />
-            <Link href="/booking">New Booking</Link>
+            <MessageSquare className="mr-2 h-4 w-4" />
+            <Link href="/chat">Chat</Link>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />

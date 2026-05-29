@@ -85,9 +85,8 @@ const Navbar = () => {
 
       {/* NAVIGATION */}
       <nav className="hidden sm:ml-6 sm:flex flex-grow justify-center items-center">
-        <NavLink href="/booking">Booking</NavLink>
-        {/* <NavLink href="/loading-example">Suspension Test</NavLink> */}
-        <NavLink href="/xxx">Global 404</NavLink>
+        <NavLink href="/">Home</NavLink>
+        <NavLink href="/chat">Chat</NavLink>
       </nav>
 
       {/* DARK MODE BUTTON */}
