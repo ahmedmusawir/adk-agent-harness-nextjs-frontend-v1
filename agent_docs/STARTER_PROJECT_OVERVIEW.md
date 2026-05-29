@@ -341,8 +341,9 @@ docs/
 
 ## Agent Working Rules
 
-1. Read `RECOVERY.md` first — 3-second context recovery
-2. Read `agent_docs/STARTER_KIT_FEEDBACK.md` "Agent Lessons" section — behavioral rules from prior runs (saves you from repeating mistakes)
+1. **🚨 EVERY UI TASK IS MOBILE-FIRST OR FAILS THE PHASE GATE.** No exceptions. Sidebars become Sheet drawers at `<md`, touch targets ≥ 44px, layouts stack vertically on mobile, verified at 375 / 768 / 1024. See `STARTER_KIT_FEEDBACK.md` Lesson 6 + `memory/feedback_mobile_first_non_negotiable.md`. This is rule ZERO.
+2. Read `RECOVERY.md` first — 3-second context recovery
+3. Read `agent_docs/STARTER_KIT_FEEDBACK.md` "Agent Lessons" section — behavioral rules from prior runs (saves you from repeating mistakes)
 3. Read latest file in `agent_docs/SESSIONS/` — full session history
 4. Follow Plan Mode protocol per `CLAUDE.md` — plan → approval → execute
 5. Use `createAdminClient()` for portal operations, `createClient()` for own-user operations
@@ -353,6 +354,7 @@ docs/
 10. Do NOT use shadcn CSS variables — use explicit Tailwind color classes
 11. **Framework conventions:** if kit docs and on-disk code disagree on file/export names, check the framework's CURRENT docs first — the kit may be ahead of the doc (e.g., Next.js 16 renamed `middleware.ts` → `proxy.ts`). Don't diagnose as misnaming.
 12. **Auth is complete — do NOT author `src/services/authService.ts`.** The kit provides full auth via `useAuthStore` + Supabase client + `/api/auth/*` routes + `protectPage`. UI components consume these directly. Service layer is for what the kit does NOT provide (chat, agent data, etc.).
+13. **📐 Page composition convention.** Before building any new page, OPEN `src/app/(public)/demo/DemoPageContent.tsx` — the canonical example. `page.tsx` is a thin wrapper (3-8 lines); `*PageContent.tsx` is **co-located in the same folder**, NOT in `src/components/`. Use `Page+Row+Box` from `src/components/common/` for content-flow pages (home, forms, marketing). Use `AppShellPage` from `src/components/common/` for full-bleed app surfaces (chat, mission control). Use plain `<div className="container mx-auto p-6">` for dense data portals (admin-portal precedent). See `STARTER_KIT_FEEDBACK.md` Lesson 7 for the decision tree.
 
 ---
 

@@ -52,6 +52,157 @@ Pure-function tests (`.test.ts`) — server actions, utilities, no React renderi
 
 ---
 
+### Lesson 4 — Capture design-freedom overrides in writing BEFORE coding visuals
+
+**Rule:** When the operator gives explicit design freedom or overrides UI_SPEC's visual prescriptions, capture the override in `_project/CLAUDE.md` + memory BEFORE coding the next visual screen. Otherwise the next session re-litigates from UI_SPEC.
+
+**Why (Run 001):** In Phase 4, I built the login faithful to UI_SPEC §3 — centered card, "⚡ Mission Control Login" emoji heading, "Authenticate" button, `NavbarLoginReg` above. Operator hated it: *"i don't like you to mimic the streamlit app's look and feel... go crazy... make it look pro... ChatGPT-like... SAAS feeling."* UI_SPEC's "faithful conversion" rule was operator-overridden for visuals. Without capturing the override in writing, the next session could drift back to UI_SPEC §3-§5 visuals.
+
+**How to apply:** When the operator says "go crazy", "make it look pro", "design freedom", "you decide", "surprise me", or expresses dissatisfaction with a faithfully-built screen — STOP, capture the override:
+
+1. **`_project/CLAUDE.md`** — add a "Design Freedom" section recording the direction (palette, typography, layout pattern, what "good" looks like in their words)
+2. **Memory** (feedback type) — for automatic cross-session recall
+3. **Distinguish what's overridden vs not** — usually only visuals; functional behavior from UI_SPEC (auth flow, data shapes, state transitions, error semantics) often still binds. Surface this distinction explicitly so it's not lost.
+
+Then execute against the captured direction. Surface — don't drift silently back to UI_SPEC visuals.
+
+---
+
+### 🚨 Lesson 6 — Mobile-first is non-negotiable for every UI task (TOP PRIORITY LESSON)
+
+**Rule:** Every UI task — component, layout, page, polish — is mobile-first or it gets an F. Mobile responsiveness is a **phase-gate failure** if absent. Not polish, not "later." It is built into the component AS IT IS AUTHORED.
+
+**Why (Run 001):** Phase 5 chat was built desktop-only — `w-64 sidebar`, no media queries, no slide-over — despite UI_SPEC §2.3 explicitly specifying 375 / 768 / 1024 breakpoints. Operator (27-year IT veteran, ex-AT&T enterprise) flagged it as failing-grade work and demanded doctrine update. Quote: *"Any UI/UX design gets an F if it's not mobile responsive."*
+
+**How to apply at every phase:**
+
+1. **Sketch the 375px experience FIRST**, then expand to desktop. Mobile is the constraint.
+2. **Sidebars → Sheet/Drawer slide-overs at `<md` (768px)**. Hamburger trigger in top bar. Use Shadcn `Sheet` primitive.
+3. **Touch targets ≥ 44px** (`min-h-11 min-w-11`). Never `w-6 h-6` for an interactive element.
+4. **Flex/grid stacks vertically on mobile** (`flex-col md:flex-row`).
+5. **Fluid typography + spacing** (`text-2xl md:text-3xl`, `px-3 md:px-6`).
+6. **Verify at 3 breakpoints in Chrome DevTools device toolbar**: 375 (iPhone SE), 768 (iPad portrait), 1024 (iPad landscape).
+7. **At the phase-completion verification gate, mobile responsiveness is a CHECKBOX** — not optional. If it's not checked, the phase is INCOMPLETE.
+
+**Kit-level fix opportunity:** Add a mobile-first checklist to the kit's phase-completion-gate template. Ship a `MobileTestHarness` component or screenshot script in the kit that auto-captures at 3 breakpoints during `npm run verify`. The current kit ships with three role portals (admin/member/superadmin) — verify they're already mobile-responsive (haven't audited them yet this run); if not, kit-level patch needed.
+
+---
+
+### 📐 Lesson 7 — Kit page composition: co-locate `*PageContent.tsx` + use common primitives
+
+**Rule:** Every new page follows the kit's documented composition pattern. Before building any page:
+
+1. **Open `src/app/(public)/demo/DemoPageContent.tsx`** — canonical example. The UI-UX-BUILDING-MANUAL.md §Page Building Pattern (line 412+) documents the convention.
+2. `page.tsx` is a thin wrapper (3-8 lines) that imports a **co-located** `<Feature>PageContent.tsx`.
+3. `<Feature>PageContent.tsx` lives **IN THE SAME FOLDER as `page.tsx`**, NOT in `src/components/`.
+4. Page-specific subcomponents also co-locate (see `(admin)/admin-portal/DeleteUserButton.tsx` as precedent).
+5. `src/components/{feature}/` is for **shared cross-page** components only.
+
+**Layout primitive decision tree:**
+
+```
+Is this a full-bleed app surface (sidebar + scrolling main / sticky input)?
+  YES → AppShellPage from src/components/common/
+        (chat, mission control, dashboards, ops consoles)
+  NO  → Is this content-flow (marketing, doc, list, form)?
+          YES → Page + Row + Box from src/components/common/
+                (home, demo, settings forms, marketing)
+          NO  → Is it a dense data table portal?
+                  YES → plain <div className="container mx-auto p-6">
+                        (admin-portal precedent — kit allows this)
+```
+
+**Common primitives** (already shipped in kit at `src/components/common/`):
+- `Page` — responsive content-flow wrapper (`w-11/12 mx-auto` non-FULL, `min-w-full` FULL)
+- `Row` — full-width section with `p-5` padding
+- `Box` — bare content block
+- `Container` — Page variant for nested sections
+- `Main` — `<main>` semantic element with `flex-grow`
+- **`AppShellPage`** — **NEW** (born this run, Phase 5.4). Full-bleed app surface with sidebar + main. Mobile-first built-in (sidebar collapses to hamburger-triggered slide-over at `<md`).
+
+**Why (Run 001 Phase 5):** I authored `ChatPageContent.tsx` in `src/components/chat/` instead of co-locating with `src/app/(cyberize)/chat/page.tsx`. Also built chat with raw flex divs, ignoring the common primitives. Operator response: *"this is not a vibe coding joint. This is an Engineering Factory. We follow rules here."* Fixed in Phase 5.4: moved 4 files to co-location, authored `AppShellPage` primitive, captured this lesson.
+
+**How to apply at every page-creation moment:**
+
+Before opening a new file under `src/app/`, ask:
+1. Will this page have a sidebar + main split? → use `AppShellPage` (write a thin route layout that wraps children in `<AppShellPage sidebar={...} mobileTitle="..." />`)
+2. Will this page be content-flow (text, forms, marketing)? → use `<Page FULL={false}>` + `<Row>` + `<Box>`
+3. Will this page be a dense table/list portal? → plain `<div className="container mx-auto p-6">`
+
+In all cases:
+- Create `page.tsx` as a 3-8 line wrapper
+- Co-locate `<Feature>PageContent.tsx` and any page-specific subcomponents in the SAME folder
+- Reusable cross-page components → `src/components/{feature}/`
+
+**Kit-level promotion path:** If `AppShellPage` validates across:
+- Phase 5 chat (Run 001 — first consumer, mobile-tested at 375/768/1024)
+- Phase 6 home (Run 001 — TBD; may use Page+Row+Box instead)
+- Phase 7 mission control (Run 001 — second consumer, confirms generalization)
+
+Then at Phase 8 Retrospective, promote upstream to:
+1. **`agent_docs/APP_FACTORY/UI-UX-BUILDING-MANUAL.md`** — new sub-section under §Page Building Pattern: "AppShellPage: full-bleed app surfaces" with usage examples and the decision tree
+2. **The pristine starter kit baseline** — kit ships `src/components/common/AppShellPage.tsx` by default
+3. **The module playbook** — `06-CHAT.md` and `07-MISSION-CONTROL.md` reference `AppShellPage` as the canonical wrapper for app-shell pages
+
+If it fails or needs major rework → document the failure in the Phase 8 retrospective and revise the primitive's design before any upstream promotion. Don't promote unvalidated patterns.
+
+---
+
+### Lesson 8 — Don't import server-only modules into client components, even transitively
+
+**Rule:** When a `"use client"` component imports a runtime VALUE (enum, const, function) from a module, the ENTIRE module gets bundled for the client. If that module has server-only imports (`next/headers`, `supabase/server`, server actions), they leak into the client bundle and **`next build` fails** (Turbopack catches this; dev mode is permissive). To cross the boundary safely, extract shared values to a module with ZERO server-only deps.
+
+**Why (Run 001 Phase 6 hotfix, 2026-05-29):** I added `import { AppRole } from "@/utils/get-user-role"` to `CyberizeSidebar.tsx` (a `"use client"` component) for the admin-link visibility check. `get-user-role.ts` ALSO exports `getUserRole` which imports `next/headers` via `supabase/server`. Dev worked; production build failed:
+
+```
+You're importing a module that depends on "next/headers". This API is only
+available in Server Components in the App Router, but you are using it in
+the Pages Router.
+Client Component Browser:
+  ./src/utils/supabase/server.ts
+  ./src/utils/get-user-role.ts
+  ./src/components/layout/CyberizeSidebar.tsx
+```
+
+Fixed by extracting `AppRole` to `src/utils/app-role.ts` (server-free) and re-exporting from `get-user-role.ts` for backward compatibility.
+
+**How to apply — before adding any import to a `"use client"` file:**
+
+1. **`import type { Foo }`** — always safe; TypeScript erases at runtime.
+2. **`import { Foo }`** (used as a runtime value — enum member, function call, comparison constant) — the WHOLE source module loads. Verify the source has no server-only imports.
+3. **For shared values that need client + server use**, dedicate a module with zero server deps. Pattern: `src/utils/app-role.ts` (Phase 6).
+4. **Symptom**: `npm run dev` works; `npm run build` fails with the message above. The "Import traces" in the error tell you which client component is the entry point.
+5. **`import type` in `useAuthStore`** works for `AppRole` typing because TS erases it. Adding a value `import { AppRole }` to `useAuthStore` would break the build — same trap.
+
+**Kit-level fix:** Ship `AppRole` already extracted in `src/utils/app-role.ts` by default. Update `get-user-role.ts` to re-export. Existing kit code keeps working; new client components can import the enum safely.
+
+**Generalizable rule for any Next.js App Router project:** audit `utils/` for files that couple server-only logic with shared values. If found, split them.
+
+---
+
+### Lesson 5 — Adding modern UI deps needs Jest config patches (ESM + jsdom polyfills)
+
+**Rule:** When adding a UI dependency that's ESM-only (e.g., `react-markdown` v10+) or uses browser-only APIs (`scrollIntoView`, `IntersectionObserver`, `ResizeObserver`, `matchMedia`), expect to patch BOTH:
+
+1. **`jest.config.js`** — add `.js/.jsx/.mjs` to `transform`, expand `transformIgnorePatterns` allowlist for the ESM transitive chain
+2. **`src/__tests__/jest.setup.ts`** — polyfill the missing browser API
+
+The kit's default Jest config handles neither.
+
+**Why (Run 001):** Phase 5 install of `react-markdown` v10 + `react-syntax-highlighter` broke 2 test suites with `SyntaxError: Unexpected token 'export'`. Then `MessageList`'s auto-scroll broke a third test with `TypeError: scrollIntoView is not a function` because jsdom doesn't implement it. Three fixes (transform regex, allowlist additions, polyfill) got all 17 suites green.
+
+**How to apply:** Whenever installing a new UI lib:
+
+1. Inspect the lib's `package.json` — `"type": "module"`? Only ESM exports? → needs allowlist entry
+2. Search the lib's source/docs for browser-only APIs → polyfill needed
+3. **Run tests immediately after install** — catches both issues before context bloats with later work
+
+The current Phase 5 allowlist in `jest.config.js` covers the react-markdown + react-syntax-highlighter chain (~30 transitive ESM packages). The `scrollIntoView` polyfill lives in `jest.setup.ts` and is a no-op for tests.
+
+**Kit-level fix opportunity:** Migrate the kit's `jest.config.js` to `@next/jest` preset (Next.js's blessed jest setup) which handles ESM + path aliases + browser-polyfill defaults out of the box. Alternative: ship a comprehensive default allowlist + the `scrollIntoView` polyfill in the kit baseline.
+
+---
+
 ## 🟡 Doc Drift: `STARTER_PROJECT_OVERVIEW.md` Calls Middleware `middleware.ts`, But Next.js 16 Renamed It
 
 **Symptom:** `STARTER_PROJECT_OVERVIEW.md` line 26 says: *"`src/middleware.ts` — calls `updateSession(request)` on every request"*. The actual file in the kit is `src/proxy.ts`. Reading the doc first, then the kit, I diagnosed this as a misnaming bug and proposed renaming `proxy.ts` → `middleware.ts`. **I was wrong.**

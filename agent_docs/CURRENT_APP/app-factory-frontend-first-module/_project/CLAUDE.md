@@ -15,6 +15,27 @@
 
 ---
 
+## 🚨 Mobile-First (NON-NEGOTIABLE — TOP RULE)
+
+**Every UI task in this project is mobile-first or it gets an F.**
+
+Mobile responsiveness is a **phase-gate failure** if absent. Not polish, not "later," not "Phase 7 cleanup." It's built into the component as it's authored. No exceptions.
+
+**Required behavior at every phase-completion gate:**
+
+- [ ] Design sketched at 375px FIRST, then expanded to desktop
+- [ ] Sidebars become slide-over Sheet drawers via hamburger trigger at `<md` (768px)
+- [ ] Touch targets ≥ 44px (`min-h-11 min-w-11` for interactive elements)
+- [ ] Layouts stack vertically on mobile (`flex-col md:flex-row` pattern)
+- [ ] Fluid typography (`text-2xl md:text-3xl`)
+- [ ] Verified at 375 / 768 / 1024 in Chrome DevTools device toolbar
+
+**Why it's at the top:** Run 001 Phase 5 shipped a desktop-only chat (`w-64 sidebar`, no media queries) despite UI_SPEC §2.3 specifying three breakpoints. That was a failure. This rule prevents recurrence.
+
+See `agent_docs/STARTER_KIT_FEEDBACK.md` Lesson 6 for the cross-project generalization and `memory/feedback_mobile_first_non_negotiable.md` for cross-session recall.
+
+---
+
 ## 🟥 Forbidden Zones (HARD GATES)
 
 These are absolute. If you find yourself about to do any of these, STOP and surface to Stark.
@@ -115,6 +136,85 @@ When you need to make a decision, consult these in this order:
 - `UI_SPEC.md` wins on UI behavior
 - `APP_BRIEF.md` wins on scope
 - If two factory docs conflict, STOP and surface — do not silently resolve
+
+---
+
+## 🎨 Design Freedom + LOCKED PALETTE (Operator Override — 2026-05-28; palette ratified 2026-05-29)
+
+UI_SPEC's visual prescriptions (§3 login layout, §4-§5 screen layouts, §2.1 rainbow gradient, emoji-prefixed titles) are **operator-overridden**. Functional behavior in UI_SPEC remains binding — auth flow, agent dropdown options, error states, save flow, all data transitions. Visual design follows the locked palette below.
+
+### Locked Palette (use these classes — don't reinvent)
+
+| Token | Light | Dark | Where it's used |
+|---|---|---|---|
+| Main bg | `bg-white` | `dark:bg-zinc-700` | Page wrappers, AppShellPage main, root body |
+| Sidebar / rail | `bg-zinc-50` | `dark:bg-zinc-800` | All sidebars, drawers |
+| Card / pill / popover | `bg-zinc-50` | `dark:bg-zinc-800` | Cards, tiles, ChatInput pill, dropdown menus, instruction blocks |
+| Subtle raised | `bg-zinc-100` | `dark:bg-zinc-600` | User message pills, inline code, table-head |
+| Border (visible) | `border-zinc-200` | `dark:border-zinc-600` | All borders that need to read in dark mode |
+| Text primary | `text-zinc-900` | `dark:text-zinc-100` | Body, headings |
+| Text muted | `text-zinc-500` | `dark:text-zinc-400` | Labels, captions, secondary |
+| Primary button | `bg-zinc-900 text-white hover:bg-zinc-800` | `dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200` | All primary CTAs (ChatGPT-inverted) |
+| Hover surface | `hover:bg-zinc-100` | `dark:hover:bg-zinc-600/60` | All hover affordances |
+| Focus ring | `focus:ring-zinc-900` | `dark:focus:ring-zinc-100` | Inputs |
+| Destructive | `bg-red-50 text-red-700 border-red-200` | `dark:bg-red-950/40 dark:text-red-300 dark:border-red-900` | Inline error banners |
+| Success indicator | `bg-emerald-50 text-emerald-700 border-emerald-200` | `dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900` | Status pills |
+
+**Default theme:** dark (`defaultTheme="dark"` in root layout).
+
+**Note:** Sidebar is DARKER than main in dark mode (`zinc-800` darker than `zinc-700`) — ChatGPT-inverted pattern. User pill is LIGHTER than main (`zinc-600` on `zinc-700` bg).
+
+### Other locked direction
+
+- **ChatGPT-style aesthetic** — minimal, clean, professional SaaS feel
+- **Inter font** (kit default — keep)
+- Generous whitespace; tight letter-spacing on headings (`tracking-tight`); weight ramp 600 → 500 → 400
+- Subtle micro-interactions only — focus rings, button hover, smooth transitions
+- No rainbow gradient strip; no emoji-prefixed Streamlit-style titles
+- Wordmark: **CYBERIZE** (small uppercase, tracked) above a confident heading
+- Use Tailwind `dark:` variants throughout (never shadcn CSS variables — per kit convention)
+- Theme toggle: `src/components/global/ThemeToggle.tsx` (clean sun/moon, distinct from the kit's dropdown ThemeToggler)
+
+When building UI under this project, **consult the palette table FIRST**. If a kit primitive (Shadcn Card etc.) uses CSS variables that don't resolve, override className with explicit Tailwind classes from the table. Surface any palette divergence to the operator BEFORE shipping — palette decisions are doctrine-level.
+
+See `agent_docs/STARTER_KIT_FEEDBACK.md` Lesson 4 for the cross-project generalization, and `memory/feedback_design_freedom_chatgpt_style.md` for cross-session recall (it has the full table too).
+
+---
+
+## 📐 Page Composition (Kit Convention — NON-NEGOTIABLE)
+
+**Before building any new page, open `src/app/(public)/demo/` and read `DemoPageContent.tsx`.** That's the canonical example. The UI-UX-BUILDING-MANUAL.md §Page Building Pattern (line 412+) documents the rules.
+
+**File location rule:**
+
+- `page.tsx` is a thin wrapper (3-8 lines) that imports and returns a co-located `<Feature>PageContent.tsx`
+- `<Feature>PageContent.tsx` lives **IN THE SAME FOLDER as `page.tsx`**, NOT in `src/components/`
+- Page-specific subcomponents (used only by that route) also co-locate
+- `src/components/{feature}/` is reserved for **shared cross-page** components
+
+**Layout primitive decision tree:**
+
+```
+Is this a full-bleed app surface (sidebar + scrolling main / sticky input)?
+  YES → AppShellPage from src/components/common/
+        (chat, mission control, dashboards, ops consoles)
+  NO  → Is this content-flow (marketing, doc, list, form)?
+          YES → Page + Row + Box from src/components/common/
+                (home, demo, settings forms, marketing)
+          NO  → Is it a dense data table portal?
+                  YES → plain <div className="container mx-auto p-6">
+                        (admin-portal precedent)
+```
+
+**Kit's common primitives** (`src/components/common/`):
+- `Page` — content-flow wrapper, responsive `w-11/12 mx-auto`
+- `Row` — full-width section with `p-5`
+- `Box` — bare content block
+- `Container` — like Page, for nested sections
+- `Main` — `<main>` element with `flex-grow`
+- `AppShellPage` — **full-bleed app surface** with sidebar + main (born Phase 5.4 of this run; mobile-responsive built-in)
+
+**Mistake to NOT repeat:** Phase 5 chat shipped with `ChatPageContent.tsx` in `src/components/chat/` (wrong location) and built without any common primitives (wrong patterns). Fixed in Phase 5.4. See `agent_docs/STARTER_KIT_FEEDBACK.md` Lesson 7 + `memory/feedback_kit_page_composition.md`.
 
 ---
 

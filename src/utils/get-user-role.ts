@@ -1,11 +1,10 @@
 import { createClient } from './supabase/server';
 
-// Define the possible application roles as an enum for strict type checking
-export enum AppRole {
-  SUPERADMIN = 'superadmin',
-  ADMIN = 'admin',
-  MEMBER = 'member'
-}
+// AppRole is defined in a server-free module so client components can use it
+// as a runtime value without dragging next/headers into the client bundle.
+// Re-exported here for backward compatibility with existing imports.
+export { AppRole } from './app-role';
+import { AppRole } from './app-role';
 
 /**
  * Fetches the user's role from the user_roles table in the database.

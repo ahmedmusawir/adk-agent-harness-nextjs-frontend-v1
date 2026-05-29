@@ -6,9 +6,9 @@
  * LoginForm unit tests.
  *
  * Intent (Rule K9): verify the cyberize login form's specific behaviors —
- * eye-toggle, post-login redirect to /chat (NOT the kit's role-based default),
- * error Alert on failure. These behaviors are what distinguish the cyberize
- * form from the kit's original.
+ * eye toggle, post-login redirect to /chat (NOT the kit's role-based default),
+ * inline error display on failure. These behaviors survive the Phase 4.5
+ * ChatGPT-style design redesign because they encode intent, not styling.
  */
 
 import "@testing-library/jest-dom";
@@ -27,11 +27,6 @@ jest.mock("@/store/useAuthStore", () => ({
     selector({ login: mockLogin }),
 }));
 
-jest.mock("@/components/common/Spinner", () => ({
-  __esModule: true,
-  default: () => <span data-testid="spinner">Loading</span>,
-}));
-
 import LoginForm from "@/components/auth/LoginForm";
 
 describe("LoginForm (cyberize)", () => {
@@ -41,22 +36,22 @@ describe("LoginForm (cyberize)", () => {
     mockRefresh.mockReset();
   });
 
-  it("renders the Mission Control title, email + password inputs, and Authenticate button", () => {
+  it("renders the Welcome heading, email + password inputs, and Sign in button", () => {
     render(<LoginForm />);
     expect(
-      screen.getByRole("heading", { name: /mission control login/i }),
+      screen.getByRole("heading", { name: /welcome back/i }),
     ).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /authenticate/i }),
+      screen.getByRole("button", { name: /^sign in$/i }),
     ).toBeInTheDocument();
   });
 
-  it("starts with the Authenticate button enabled", () => {
+  it("starts with the Sign in button enabled", () => {
     render(<LoginForm />);
     expect(
-      screen.getByRole("button", { name: /authenticate/i }),
+      screen.getByRole("button", { name: /^sign in$/i }),
     ).not.toBeDisabled();
   });
 
@@ -84,7 +79,7 @@ describe("LoginForm (cyberize)", () => {
 
     await user.type(screen.getByLabelText(/email/i), "test@example.com");
     await user.type(screen.getByLabelText(/^password$/i), "secret");
-    await user.click(screen.getByRole("button", { name: /authenticate/i }));
+    await user.click(screen.getByRole("button", { name: /^sign in$/i }));
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith("test@example.com", "secret");
@@ -93,14 +88,14 @@ describe("LoginForm (cyberize)", () => {
     expect(mockPush).not.toHaveBeenCalledWith("/admin-portal");
   });
 
-  it("shows a destructive Alert on auth failure and does not redirect", async () => {
+  it("shows an inline error message on auth failure and does not redirect", async () => {
     mockLogin.mockRejectedValueOnce(new Error("Invalid credentials"));
     const user = userEvent.setup();
     render(<LoginForm />);
 
     await user.type(screen.getByLabelText(/email/i), "wrong@example.com");
     await user.type(screen.getByLabelText(/^password$/i), "bad");
-    await user.click(screen.getByRole("button", { name: /authenticate/i }));
+    await user.click(screen.getByRole("button", { name: /^sign in$/i }));
 
     await waitFor(() => {
       const alert = screen.getByRole("alert");

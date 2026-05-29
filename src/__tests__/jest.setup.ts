@@ -18,3 +18,9 @@ jest.mock('next/navigation', () => ({
 jest.mock('next/cache', () => ({
   revalidatePath: jest.fn(),
 }));
+
+// jsdom doesn't implement Element.scrollIntoView — polyfill as a no-op for tests.
+// Production browsers have this natively.
+if (typeof Element !== 'undefined' && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = function () {};
+}

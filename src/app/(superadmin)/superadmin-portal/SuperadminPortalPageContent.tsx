@@ -33,12 +33,12 @@ const SuperadminPortalPageContent = async ({ page }: Props) => {
     <main className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Superadmin Portal</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">Superadmin Portal</h1>
+          <p className="text-zinc-500 dark:text-zinc-400 mt-1">
             Manage all users — {total} total
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200">
           <Link href="/superadmin-portal/add-user">
             <UserPlus className="mr-2 h-4 w-4" />
             Add User
@@ -47,26 +47,26 @@ const SuperadminPortalPageContent = async ({ page }: Props) => {
       </div>
 
       {users.length === 0 ? (
-        <p className="text-muted-foreground">No users found.</p>
+        <p className="text-zinc-500 dark:text-zinc-400">No users found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {users.map((user) => (
-            <Card key={user.id} className="flex flex-col justify-between">
+            <Card key={user.id} className="flex flex-col justify-between bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-600">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base font-semibold truncate capitalize">
+                <CardTitle className="text-base font-semibold truncate capitalize text-zinc-900 dark:text-zinc-100">
                   {user.full_name ?? "—"}
                 </CardTitle>
-                <p className="text-sm text-muted-foreground truncate">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 truncate">
                   {user.email ?? "—"}
                 </p>
               </CardHeader>
               <CardContent className="pb-2">
-                <p className={`text-base font-bold ${roleColor[user.role] ?? "text-slate-500"}`}>
+                <p className={`text-base font-bold ${roleColor[user.role] ?? "text-zinc-500"}`}>
                   Role: {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                 </p>
               </CardContent>
               <CardFooter className="flex gap-2 pt-2">
-                <Button asChild variant="outline" size="sm" className="border-2 border-slate-400 dark:border-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <Button asChild variant="outline" size="sm" className="border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-600">
                   <Link href={`/superadmin-portal/edit/${user.id}`}>
                     <Pencil className="mr-1 h-4 w-4" />
                     Edit

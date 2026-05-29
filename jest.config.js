@@ -24,10 +24,18 @@ module.exports = {
     '**/?(*.)+(spec|test).+(ts|tsx|js)',
   ],
 
-  // A map from regular expressions to paths to transformers
+  // A map from regular expressions to paths to transformers.
+  // Includes JS/MJS so ESM-only deps (react-markdown v10+ chain) can be transformed.
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx|js|jsx|mjs)$': 'ts-jest',
   },
+
+  // Don't transform node_modules EXCEPT the ESM-only deps that react-markdown
+  // pulls in (it's ESM-only as of v10). The allowlist below covers its
+  // transitive chain. Update when adding more ESM-only deps.
+  transformIgnorePatterns: [
+    '/node_modules/(?!(react-markdown|remark-.*|micromark.*|decode-named-character-reference|character-entities.*|character-reference-invalid|property-information|hast-util-.*|space-separated-tokens|comma-separated-tokens|unist-util-.*|mdast-util-.*|trim-lines|unified|bail|is-plain-obj|trough|vfile.*|html-void-elements|zwitch|longest-streak|markdown-table|ccount|escape-string-regexp|hastscript|html-url-attributes|estree-util-is-identifier-name|devlop|fault|web-namespaces|stringify-entities|refractor|parse-entities|is-alphabetical|is-alphanumerical|is-decimal|is-hexadecimal|is-plain-obj)/)',
+  ],
 
   testPathIgnorePatterns: ['/node_modules/', '/.next/', '<rootDir>/src/__tests__/jest.setup.ts'],
 };

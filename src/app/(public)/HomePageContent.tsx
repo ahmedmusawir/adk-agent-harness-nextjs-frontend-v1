@@ -1,135 +1,180 @@
-import Box from "@/components/common/Box";
+import Link from "next/link";
+import {
+  LayoutDashboard,
+  LogIn,
+  MessageSquare,
+  Shield,
+  ShieldCheck,
+  SlidersHorizontal,
+  User,
+  type LucideIcon,
+} from "lucide-react";
+
 import Page from "@/components/common/Page";
 import Row from "@/components/common/Row";
-import { Button } from "@/components/ui/button";
-import Head from "next/head";
-import Link from "next/link";
-import React, { ReactNode } from "react";
+import Box from "@/components/common/Box";
+import { AppRole } from "@/utils/get-user-role";
 
-const HomePageContent = () => {
+import QuickLaunchTile from "./QuickLaunchTile";
+
+interface HomePageContentProps {
+  userEmail: string | null;
+  role: AppRole | null;
+}
+
+interface TileSpec {
+  href: string;
+  Icon: LucideIcon;
+  title: string;
+  description: string;
+}
+
+const getTilesForRole = (role: AppRole | null): TileSpec[] => {
+  if (!role) return [];
+  const tiles: TileSpec[] = [];
+
+  // All authenticated roles — Chat is the primary surface
+  tiles.push({
+    href: "/chat",
+    Icon: MessageSquare,
+    title: "Chat",
+    description: "Converse with the agent fleet.",
+  });
+
+  // Admin+ tools
+  if (role === AppRole.ADMIN || role === AppRole.SUPERADMIN) {
+    tiles.push({
+      href: "/mission-control",
+      Icon: SlidersHorizontal,
+      title: "Mission Control",
+      description: "Edit per-agent instructions.",
+    });
+    tiles.push({
+      href: "/admin-portal",
+      Icon: Shield,
+      title: "Admin Portal",
+      description: "Manage members and roles.",
+    });
+  }
+
+  // Superadmin-only
+  if (role === AppRole.SUPERADMIN) {
+    tiles.push({
+      href: "/superadmin-portal",
+      Icon: ShieldCheck,
+      title: "Superadmin Portal",
+      description: "Full user administration.",
+    });
+  }
+
+  // Member-primary
+  if (role === AppRole.MEMBER) {
+    tiles.push({
+      href: "/members-portal",
+      Icon: LayoutDashboard,
+      title: "Members Dashboard",
+      description: "Your member portal.",
+    });
+  }
+
+  // Profile for everyone — destination depends on role per kit convention
+  const profileHref =
+    role === AppRole.MEMBER ? "/members-portal/profile" : "/profile";
+  tiles.push({
+    href: profileHref,
+    Icon: User,
+    title: "Profile",
+    description: "Update your account details.",
+  });
+
+  return tiles;
+};
+
+const HomePageContent = ({ userEmail, role }: HomePageContentProps) => {
+  const isAuthed = !!role;
+  const tiles = getTilesForRole(role);
+
   return (
-    <>
-      <Head>
-        <title>HomePageContent</title>
-        <meta name="description" content="This is the home page" />
-      </Head>
-      <Page className={"border border-gray-300"} FULL={false}>
-        <Row className={"min-w-full text-center my-5"}>
-          <h2>Stark SaaS Starter Demo Events</h2>
+    <Page FULL={false} className="">
+      {/* Hero */}
+      <Row className="text-center pt-6 md:pt-12">
+        <p className="text-xs font-medium tracking-[0.25em] text-zinc-500 dark:text-zinc-400 mb-3">
+          CYBERIZE
+        </p>
+        <h1 className="text-3xl md:text-5xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Cyberize Agentic Automation
+        </h1>
+        <p className="text-base md:text-lg text-zinc-500 dark:text-zinc-400 mt-3">
+          Operate. Configure. Converse.
+        </p>
+        <div className="mt-5">
+          <SystemStatusPill />
+        </div>
+      </Row>
+
+      {/* Authed: role-aware quick-launch tiles. Unauthed: sign-in CTA. */}
+      {isAuthed ? (
+        <Row className="pt-4">
+          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-4">
+            Quick launch
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {tiles.map((tile) => (
+              <QuickLaunchTile
+                key={tile.href}
+                href={tile.href}
+                icon={<tile.Icon size={20} />}
+                title={tile.title}
+                description={tile.description}
+              />
+            ))}
+          </div>
         </Row>
-        <Row className={"grid gap-3 grid-auto-fit p-3"}>
-          <Box className={"p-1"}>
-            <img
-              src="https://picsum.photos/id/62/350/300"
-              className="mb-3 min-w-full"
-              alt=""
-            />
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Possimus
-              et, ex eum rem mollitia totam eius ad, sapiente eos maiores
-              voluptatum, explicabo harum quos dolores nemo eaque reprehenderit
-              quo. Iure.
-            </p>
-            <Link className="float-end" href="/booking">
-              <Button className="bg-green-700 hover:bg-green-600 text-white my-5">
-                Book Now
-              </Button>
+      ) : (
+        <Row className="flex flex-col items-center pt-6">
+          <Box className="w-full max-w-md text-center">
+            <Link
+              href="/auth"
+              className="inline-flex items-center gap-2 h-11 px-6 rounded-md font-medium bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+            >
+              <LogIn size={18} />
+              Sign in
             </Link>
-          </Box>
-          <Box className={"p-1"}>
-            <img
-              src="https://picsum.photos/id/63/350/300"
-              className="mb-3 min-w-full"
-              alt=""
-            />
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Possimus
-              et, ex eum rem mollitia totam eius ad, sapiente eos maiores
-              voluptatum, explicabo harum quos dolores nemo eaque reprehenderit
-              quo. Iure.
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-3">
+              Need access? Contact your administrator.
             </p>
-            <Link className="float-end" href="/booking">
-              <Button className="bg-green-700 hover:bg-green-600 text-white my-5">
-                Book Now
-              </Button>
-            </Link>
-          </Box>
-          <Box className={"p-1"}>
-            <img
-              src="https://picsum.photos/id/64/350/300"
-              className="mb-3 min-w-full"
-              alt=""
-            />
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Possimus
-              et, ex eum rem mollitia totam eius ad, sapiente eos maiores
-              voluptatum, explicabo harum quos dolores nemo eaque reprehenderit
-              quo. Iure.
-            </p>
-            <Link className="float-end" href="/booking">
-              <Button className="bg-green-700 hover:bg-green-600 text-white my-5">
-                Book Now
-              </Button>
-            </Link>
-          </Box>
-          <Box className={"p-1"}>
-            <img
-              src="https://picsum.photos/id/65/350/300"
-              className="mb-3 min-w-full"
-              alt=""
-            />
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Possimus
-              et, ex eum rem mollitia totam eius ad, sapiente eos maiores
-              voluptatum, explicabo harum quos dolores nemo eaque reprehenderit
-              quo. Iure.
-            </p>
-            <Link className="float-end" href="/booking">
-              <Button className="bg-green-700 hover:bg-green-600 text-white my-5">
-                Book Now
-              </Button>
-            </Link>
-          </Box>
-          <Box className={"p-1"}>
-            <img
-              src="https://picsum.photos/id/66/350/300"
-              className="mb-3 min-w-full"
-              alt=""
-            />
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Possimus
-              et, ex eum rem mollitia totam eius ad, sapiente eos maiores
-              voluptatum, explicabo harum quos dolores nemo eaque reprehenderit
-              quo. Iure.
-            </p>
-            <Link className="float-end" href="/booking">
-              <Button className="bg-green-700 hover:bg-green-600 text-white my-5">
-                Book Now
-              </Button>
-            </Link>
-          </Box>
-          <Box className={"p-1"}>
-            <img
-              src="https://picsum.photos/id/67/350/300"
-              className="mb-3 min-w-full"
-              alt=""
-            />
-            <p>
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Possimus
-              et, ex eum rem mollitia totam eius ad, sapiente eos maiores
-              voluptatum, explicabo harum quos dolores nemo eaque reprehenderit
-              quo. Iure.
-            </p>
-            <Link className="float-end" href="/booking">
-              <Button className="bg-green-700 hover:bg-green-600 text-white my-5">
-                Book Now
-              </Button>
-            </Link>
           </Box>
         </Row>
-      </Page>
-    </>
+      )}
+
+      {/* Footer */}
+      <Row className="pt-8 pb-4 text-center">
+        <p className="text-xs text-zinc-400 dark:text-zinc-500">
+          Cyberize &middot; Stark Industries Internal
+          {userEmail && (
+            <>
+              {" "}
+              &middot; signed in as <span className="text-zinc-500 dark:text-zinc-400">{userEmail}</span>
+            </>
+          )}
+        </p>
+      </Row>
+    </Page>
   );
 };
 
 export default HomePageContent;
+
+/* ───────────────────────────── System status pill (mocked) ───────────────────────────── */
+
+const SystemStatusPill = () => (
+  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900">
+    <span className="relative flex h-1.5 w-1.5">
+      <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75 animate-ping" />
+      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+    </span>
+    <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+      All systems operational
+    </span>
+  </div>
+);

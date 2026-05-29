@@ -18,10 +18,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem={true}
           disableTransitionOnChange
         >
