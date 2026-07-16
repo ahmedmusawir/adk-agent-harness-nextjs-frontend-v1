@@ -2,9 +2,20 @@
 
 Active: **BIM-001 — "Prove the Wire" (Backend Integration Module)**
 Date: 2026-07-16
-Status: **NOT STARTED — oriented, awaiting Coordinator go for Stage A (Recon).**
+Status: **STAGE A COMPLETE — recon report on file, recommended verdict AMEND. Awaiting
+Architect's binding verdict + Coordinator rulings (D1, AM-1, AM-2) + Stage B authorization.**
 
-Branch: `main`
+Branch: `bim-001` (Operator created mid-recon from `main@8ce5240`; HEAD `1eafe55`)
+
+## Stage A result (2026-07-16)
+
+- **Report:** `agent_docs/recon/RECON_adk-harness-frontend_BIM001-stageA_2026-07-16.md`
+- **Pointer:** `agent_docs/CURRENT_APP/BIM001/STAGE_A_REPORT_POINTER.md`
+- A1–A11 all HOLD · baseline 121/121 green, tsc clean, build clean (21 routes)
+- Wrapper /health 200 — agent list exactly matches `AgentName` union (5/5)
+- **AM-1:** G10 lint unsatisfiable (`next lint` removed in Next 16; NO ESLint config exists)
+- **AM-2:** real wrapper URL committed in Stage B Amendment §A1.5 example — redaction needed
+- D1 sentinel conflict (`session_id: undefined` vs `string`) confirmed real — Coordinator must rule
 
 ---
 
