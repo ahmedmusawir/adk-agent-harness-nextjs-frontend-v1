@@ -1,72 +1,70 @@
 # Recovery State
 
-Run: **Factory Run 001 — Cyberize Agentic Automation Next.js conversion**
-Date: 2026-05-29
-Status: **COMPLETE — all 8 phases delivered. Pending final manual verification.**
+Active: **BIM-001 — "Prove the Wire" (Backend Integration Module)**
+Date: 2026-07-16
+Status: **NOT STARTED — oriented, awaiting Coordinator go for Stage A (Recon).**
 
-Branch at handoff: `phase-7` (operator committed prior phases before Phase 8 execution; this branch contains Phase 8 changes pending commit).
-
----
-
-## What's in this checkout
-
-A fully functional, mobile-first, dark-default, ChatGPT-style Next.js frontend that conversation-replaces a Streamlit prototype. Three primary screens (Login at `/auth`, Chat at `/chat`, Mission Control at `/mission-control`) + a snazzy home page (`/`) + the kit's three preserved RBAC portals (admin / members / superadmin).
-
-- 121 tests passing across 20 suites
-- `npx tsc --noEmit` clean
-- `npm run build` clean — 21 routes
-- All four services mocked behind a Phase-2-clean swap interface
-- Auth handled by the kit's complete stack — NO authService wrapper (Lesson 2)
-- Lessons 1-8 captured in `agent_docs/STARTER_KIT_FEEDBACK.md` + memory
-- Locked palette table in `_project/CLAUDE.md` Design Freedom section
-- AppShellPage primitive (born this run, used by `/chat` + `/mission-control`) ready for upstream promotion
-
-## Last phase completed: **Phase 8 — Verification + Retrospective**
-
-Files produced this phase:
-- `BACKEND_SWAP_NOTES.md` (project root) — consolidated swap reference for the backend engineer. Per-method mock-vs-real + 6 open architectural questions from DATA_CONTRACT §5.
-- `agent_docs/CURRENT_APP/.../playbook/RETROSPECTIVES/RUN_001_CYBERIZE_LESSONS.md` — full retrospective. What worked, named-incident lessons, structural change proposals for Run 002+.
-- `Navbar.tsx` + `Sidebar.tsx` — stale `Booking` / `Global 404` / `New Booking` links replaced with `Home` / `Chat`. The deferred-from-Phase-5/6 cleanup is now done.
-
-## Verification
-
-- `npx tsc --noEmit` → exit 0
-- `npm test` → 20 suites / 121 tests passing
-- `npm run build` → clean. 21 routes including `/`, `/auth`, `/chat`, `/mission-control`, kit portals, all API routes.
-- Manual operator review pending — `agent_docs/VERIFICATION_PHASE_5.md` covers Sections 1-15 (Phases 5 + 6 + 7). Phase 8 changes are docs + 2 small navbar edits; no new user-visible behaviors to verify beyond confirming the kit-portal nav now says "Home" / "Chat" instead of "Booking" / "Global 404".
-
-## Suggested next operator steps
-
-1. **Manual verification walkthrough** via `agent_docs/VERIFICATION_PHASE_5.md`
-2. **Commit Phase 8 changes** on the `phase-7` branch (BACKEND_SWAP_NOTES + retrospective + 2 navbar edits + this RECOVERY + session log)
-3. **Merge `phase-7` into `main`** (or your release branch) — Run 001 is done
-4. **Tag** `phase-1-complete` per `_project/CLAUDE.md` "On Completion" §5
-5. **Communicate to backend engineer**: "Ready for overall-lifecycle Phase 2 — see `BACKEND_SWAP_NOTES.md` at project root"
-6. **(Async, when convenient) Refresh pristine kit baseline** with the upstream promotion proposals — see `agent_docs/STARTER_KIT_FEEDBACK.md` priority order + the retrospective's structural-change table
-
-## Project is ready for Phase 2 handoff
-
-The frontend-first phase is **done**. Backend swap is a separate run with a separate agent — likely you executing the wrapper + Supabase + GCS wiring per `BACKEND_SWAP_NOTES.md`, or a separate engineer.
-
-When that's done:
-- Delete `src/mocks/` in one commit
-- All 121+ tests should still pass (they test service shape, not source)
-- `npm run build` clean
-- Tag `phase-2-complete`
+Branch: `main`
 
 ---
 
-## Where to start for a continuing agent session (e.g., backend swap)
+## 3-second summary
 
-1. Read `BACKEND_SWAP_NOTES.md` at project root — your map for the swap
-2. Read `_project/DATA_CONTRACT.md` §2 + §5 — full contract + open questions
-3. Read `agent_docs/STARTER_KIT_FEEDBACK.md` Lessons 1-8 — agent behavior rules from Run 001
-4. Read the retrospective: `agent_docs/CURRENT_APP/.../playbook/RETROSPECTIVES/RUN_001_CYBERIZE_LESSONS.md`
-5. Don't touch UI components — the contract is the swap point
+- **Run 001 (FFM) is DONE and on `main`.** The Next.js frontend-first phase shipped:
+  ChatGPT-style UI, 121 tests / 20 suites passing, `tsc --noEmit` clean, `npm run build`
+  clean (21 routes), all four services mocked behind a Phase-2-clean swap interface.
+- **BIM-001 is the new active module** — the backend mirror of the FFM. Mission: connect
+  the Next.js chat domain to the live Python ADK wrapper on Cloud Run via new server-side
+  route handlers, behind a mode flag, with mock mode preserved one env flip away.
+- Nothing in BIM-001 has been executed yet. We are at the very front of **Stage A**.
 
-## Where to start for Run 002 (next Streamlit conversion)
+## Current working tree (uncommitted on `main`)
 
-1. Read `agent_docs/STARTER_KIT_FEEDBACK.md` — kit issues + Agent Lessons (start with mobile-first Lesson 6, page composition Lesson 7, server-only-imports Lesson 8)
-2. Read `playbook/RETROSPECTIVES/RUN_001_CYBERIZE_LESSONS.md` — what to repeat, what to avoid
-3. Follow the Factory module playbook from Phase 0 forward — the doctrine should be tight enough that Run 002 hits fewer roadblocks
-4. Update the retrospective's "Structural changes proposed for Run 002+" status as items get adopted in the pristine kit baseline
+- `_SKILLS/` — new (contains the `stark-recon` skill that powers Stage A)
+- `agent_docs/CURRENT_APP/BIM001/` — new (the BIM-001 module folder + manager CLAUDE.md)
+- `agent_docs/CURRENT_APP/README.md` — new
+- `supabase/CLAUDE.md` — new
+- `CLAUDE.md` — modified
+
+## BIM-001 structure (two hard-gated stages — NEVER both in one session)
+
+```
+STAGE A — RECON (read-only)          STAGE B — IMPLEMENTATION (code)
+run stark-recon skill + addendum ─▶  STOP ─▶ Architect verdict ─▶ Tony authorizes ─▶ build
+```
+
+- **Manager file (read first):** `agent_docs/CURRENT_APP/BIM001/CLAUDE.md`
+- **Stage A mission:** `agent_docs/CURRENT_APP/BIM001/STAGE_A_RECON_MISSION.md`
+- **Stage A engine:** `_SKILLS/stark-recon-skill-v1.1/stark-recon/` (read its CLAUDE.md
+  then SKILL.md; six phases, five evidence labels, disk wins, Surprises section mandatory)
+- **Stage B files (do NOT open until authorized):** `STAGE_B_MODULE_BRIEF.md`,
+  `STAGE_B_DATA_CONTRACT_AMENDMENT.md`
+
+## Stage A — what it allows (from manager Standing Rulings)
+
+1. Read-only git only: `status --porcelain`, current branch, HEAD short-SHA (before+after).
+2. Exactly ONE network call: `GET {ADK_WRAPPER_URL}/health` — URL supplied by Coordinator
+   in-session, never committed. No POSTs (they create sessions and cost money).
+3. Machine-state change: dependency install only (`npm ci` preferred) so baseline runs.
+4. Recon report → `agent_docs/recon/` per skill Output Contract, + a 3-line pointer file in
+   `agent_docs/CURRENT_APP/BIM001/` naming the report path and recommended verdict.
+
+## Suggested next operator step
+
+- Coordinator (Tony) types the launch line, then supplies the wrapper URL when asked:
+  > "Claudy — read `agent_docs/CURRENT_APP/BIM001/CLAUDE.md` and begin Stage A."
+- Claudy announces scope in ONE message (skill phases + addendum sections + baseline
+  commands + request for wrapper URL), gets the nod, runs recon, writes the report, prints
+  headline + recommended verdict, updates the session log, and **STOPS**. No Stage B.
+
+## Stage B entry conditions (all four, no exceptions)
+
+1. Stage A report on file
+2. Architect's binding verdict = GO (or AMEND with amendments applied)
+3. Coordinator ruled on conflict D1 (sentinel `session_id` type — see Amendment §A1.4)
+4. Coordinator says, in plain words, "Stage B is authorized"
+
+---
+
+_Superseded the 2026-05-29 Run-001 recovery snapshot. Run 001 is complete and merged; this
+file now tracks BIM-001._
