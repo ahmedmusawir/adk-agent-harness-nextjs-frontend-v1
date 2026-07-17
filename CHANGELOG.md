@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-17 09:08 UTC — [CC] Claude Code
+
+- **Updated:** `agent_docs/CURRENT_APP/BIM001/RETROSPECTIVE.md` — finalized at module close: all gates green, field notes (Grammarly hydration false alarm, cold-backend 500 vs sentinel, session_id fallback), 4 candidate lessons proposed
+- **Updated:** `session_2026-07-17.md`, `RECOVERY.md` — BIM-001 CLOSED per Coordinator confirmation
+- **Reason:** Coordinator confirmed all manual gates (G3–G6, G8) green — BIM-001 close-out directive
+
 ## 2026-07-16 13:27 UTC — [CC] Claude Code
 
 - **Created:** `src/app/api/agent/run/route.ts`, `src/app/api/agent/history/route.ts` — BIM-001 thin proxy routes to the ADK wrapper
