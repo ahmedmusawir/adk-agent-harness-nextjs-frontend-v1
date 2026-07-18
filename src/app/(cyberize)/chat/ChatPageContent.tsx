@@ -35,10 +35,20 @@ export const ChatPageContent = () => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState<string>("");
 
-  // Mount effect: fetch profile + load initial history for the default agent
+  // Mount effect: fetch profile + load initial history for the default agent.
+  // FIX-001 (amended): merge the fetched profile with the persisted map
+  // (hydrated from localStorage before effects run) — PERSISTED wins per-key,
+  // fetched fills gaps. While profileService is mocked it returns SEEDED fake
+  // session ids; letting those win would overwrite the genuine persisted
+  // pointer and getHistory would query a nonexistent session. This precedence
+  // MUST be revisited when profileService goes real (server becomes truth).
   useEffect(() => {
     if (!userId) return;
-    void profileService.fetchProfile(userId).then(async (sessions) => {
+    void profileService.fetchProfile(userId).then(async (fetched) => {
+      const sessions = {
+        ...fetched,
+        ...useChatStore.getState().agentSessions,
+      };
       setAgentSessions(sessions);
       const sessionId = sessions[selectedAgent];
       if (sessionId) {
