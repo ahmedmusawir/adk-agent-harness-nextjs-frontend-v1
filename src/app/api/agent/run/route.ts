@@ -1,48 +1,45 @@
 /**
- * POST /api/agent/run — thin proxy to the Python ADK wrapper (BIM-001).
+ * POST /api/agent/run — native ADK connector (BIM-002; upstream is now the
+ * ADK bundle's api_server directly — the Python wrapper is retired).
  *
- * Forwards the request body verbatim to {ADK_WRAPPER_URL}/run_agent and returns
- * the wrapper's JSON + status verbatim. Zero intelligence by design: session
- * create/retry logic stays in the wrapper until Phase B (BIM-002) ports it here.
+ * External contract FROZEN and identical to A1: accepts RunAgentRequest →
+ * `{ response, session_id }`; 500 config fault, 502 upstream/parse fault;
+ * optional Authorization passed through (reserved slot, R2). Internals port
+ * the wrapper's session bootstrap, not-found→create→retry-once loop, and
+ * reversed-event-scan response selection.
  *
- * @see agent_docs/CURRENT_APP/BIM001/DATA_CONTRACT_AMENDMENT.md §A1.2
+ * @see agent_docs/CURRENT_APP/BIM002/DATA_CONTRACT_AMENDMENT_A2.md
  */
 
 import { NextResponse } from 'next/server';
 
-// Wrapper's run_agent can take up to 60s internally; client budget is 90s.
-// maxDuration keeps a future serverless host from imposing a shorter default.
+import type { RunAgentRequest } from '@/types';
+
+import { ConnectorError, runAgentFlow } from '../_lib/adk';
+
+// Create + run + retry share a 90s budget (A2.3 §5); maxDuration keeps a
+// future serverless host from imposing a shorter default.
 export const maxDuration = 90;
 
-const RUN_TIMEOUT_MS = 90_000;
-
 export async function POST(req: Request) {
-  const wrapperUrl = process.env.ADK_WRAPPER_URL;
-  if (!wrapperUrl) {
+  const baseUrl = process.env.ADK_BUNDLE_URL;
+  if (!baseUrl) {
     return NextResponse.json(
-      { error: 'ADK_WRAPPER_URL is not configured' },
+      { error: 'ADK_BUNDLE_URL is not configured' },
       { status: 500 },
     );
   }
 
-  const body = await req.text();
-  const auth = req.headers.get('authorization'); // reserved auth slot (Brief §7)
+  const auth = req.headers.get('authorization'); // reserved auth slot (R2)
 
   try {
-    const upstream = await fetch(`${wrapperUrl}/run_agent`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(auth ? { Authorization: auth } : {}),
-      },
-      body,
-      signal: AbortSignal.timeout(RUN_TIMEOUT_MS),
-    });
-    return new NextResponse(await upstream.text(), {
-      status: upstream.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const body = (await req.json()) as RunAgentRequest;
+    const result = await runAgentFlow({ baseUrl, auth }, body);
+    return NextResponse.json(result, { status: 200 });
   } catch (e) {
+    if (e instanceof ConnectorError) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
     return NextResponse.json({ error: String(e) }, { status: 502 });
   }
 }

@@ -1,32 +1,38 @@
 # Recovery State
 
-Last action: **FIX-001 CLOSED** — 2026-07-18 16:14 final disposition (Architect-ruled on
-Coordinator evidence): **PASS**. Pointer persistence + session restoration proven
-end-to-end (session-1784364468 identical across localStorage, /run payload, reload
-/history payload). Reload-transcript display **BLOCKED-UPSTREAM** — wrapper /get_history
-returned {"history":[]} for a valid live session; latent v1 defect surfaced by FIX-001's
-success (never worked in system lifetime), not a regression. Root cause not pursued —
-wrapper is demolished in BIM-002. **Verification transfers to BIM-002 gate N7.**
+Last action: **BIM-002 Engineer side COMPLETE — green board** — 2026-07-18 17:20. The
+wrapper's brains are ported: both agent routes now speak native ADK api_server protocol
+via `src/app/api/agent/_lib/adk.ts` (session bootstrap, not-found→create→retry-once,
+reversed-event response selection per FLAG-1 `content.role === "model"`, history
+normalization). `ADK_WRAPPER_URL` fully retired from code + `.env.example` (R1);
+`ADK_BUNDLE_URL` is the one server-only var. Board: baseline 24/149 → **25 suites /
+174 tests green**, tsc clean, build clean, N9 advisory grep clean. Zero git/cloud ops
+by Engineer.
 
-Pending: **Coordinator** — the FIX-001 commit
-(`FIX-001: persist agent-to-session pointer to localStorage`, 11-file stage list in
-`agent_docs/RESPONSES/response_2026-07-18_161419_fix001-final-disposition.md` +
-`response_2026-07-18_145214_fix001-amendment-result.md`). Engineer ran zero git ops.
+**BIM-002 CLOSED 2026-07-18 19:52 (pending N11 ceremony).** Coordinator + Stark QA
+confirmed all gates green: N4 · N5 · N6 (supplied-id creation adjudicated spec-correct
+per A2.3) · **N7 OUTCOME A** — the T0 native probe returned events, convicting the
+wrapper's /get_history as the root cause of the lifetime empty-history defect;
+reload-history fixed free by the port · N8 · N3 · N9. jest.config deviation RATIFIED
+(QA factory lesson: config files conditionally writable when reported).
+RETROSPECTIVE.md written (4 lesson candidates PROPOSED, not written). QA findings
+F01–F03 routed to future FIX-002; F04 deferred pending ADK semantics.
 
-Next step: **BIM-002 ("Kill the Wrapper") authoring.** Evidence base ready:
-`agent_docs/RECON/RECON_adk-agent-harness_BIM002-pre-authoring_2026-07-17.md` · port
-target in BIM-001 Amendment §A1.6 · route signatures frozen · **inherits gate N7**
-(reload renders transcript — first time ever) · BIM-ladder item: revisit ChatPageContent
-merge precedence when profileService goes real.
+Pending: **Coordinator** —
+1. Docs commit (file list in session log 19:52 / on-screen close-out message).
+2. **N11 ceremony:** pause the wrapper's Cloud Run service → one more live message →
+   wrapper formally retired with honors.
+3. Rulings on lesson candidates L-a…L-d (filenames proposed in BIM002/RETROSPECTIVE.md).
 
-Branch: `bim-002` (FIX-001 work uncommitted in working tree, awaiting Coordinator).
+Next step: FIX-002 authoring (F01–F03) when the Architect picks it up. Carried items:
+F04 (ADK semantics), merge-precedence revisit when profileService goes real, R2 public
+endpoints tracked.
 
 ---
 
 ## 3-second summary
 
-- BIM-001 CLOSED · **FIX-001 CLOSED (PASS)** — reload keeps the session pointer; the
-  wrapper's history endpoint is the remaining (dying) broken link → BIM-002 gate N7.
-- Green board: 24 suites / 149 tests, tsc clean, build clean. Commit pending (Coordinator).
-- Only known breakage: `npm run lint` (pre-existing B1) + wrapper /get_history (dies with
-  the wrapper in BIM-002).
+- BIM-001 CLOSED · FIX-001 CLOSED · **BIM-002 CLOSED (ceremony pending)** — UI →
+  routes → ADK bundle, no middleman; wrapper convicted post-mortem on the history bug.
+- Board: 25 suites / 174 tests, tsc clean, build clean. Docs commit + N11 = Coordinator.
+- Only known breakage: `npm run lint` (pre-existing B1, out of scope).

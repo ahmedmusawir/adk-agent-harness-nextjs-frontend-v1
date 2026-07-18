@@ -37,5 +37,11 @@ module.exports = {
     '/node_modules/(?!(react-markdown|remark-.*|micromark.*|decode-named-character-reference|character-entities.*|character-reference-invalid|property-information|hast-util-.*|space-separated-tokens|comma-separated-tokens|unist-util-.*|mdast-util-.*|trim-lines|unified|bail|is-plain-obj|trough|vfile.*|html-void-elements|zwitch|longest-streak|markdown-table|ccount|escape-string-regexp|hastscript|html-url-attributes|estree-util-is-identifier-name|devlop|fault|web-namespaces|stringify-entities|refractor|parse-entities|is-alphabetical|is-alphanumerical|is-decimal|is-hexadecimal|is-plain-obj)/)',
   ],
 
-  testPathIgnorePatterns: ['/node_modules/', '/.next/', '<rootDir>/src/__tests__/jest.setup.ts'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/.next/',
+    '<rootDir>/src/__tests__/jest.setup.ts',
+    // Fixture modules (data only, no tests) — BIM-002
+    '<rootDir>/src/__tests__/api/fixtures/',
+  ],
 };

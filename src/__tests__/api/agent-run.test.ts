@@ -1,13 +1,21 @@
 /**
- * Unit tests for POST /api/agent/run (BIM-001 thin proxy).
- * Intent (Rule K9): the route forwards verbatim, passes status/auth through,
- * and speaks HTTP on failure (500 config fault, 502 upstream fault) — so the
- * service layer above it can own the contract-level sentinel.
+ * Unit tests for POST /api/agent/run (BIM-002 native connector).
+ * Intent (Rule K9): the route speaks native ADK api_server protocol while the
+ * EXTERNAL contract stays frozen — `{response, session_id}` out, 500 config
+ * fault, 502 upstream fault, Authorization pass-through (R2). Overlapping
+ * guarantees from the BIM-001 suite are preserved; the retired proxy protocol
+ * assertions are replaced per the FLAG-2 ruling.
  */
 
 import { POST } from '@/app/api/agent/run/route';
 
-const WRAPPER = 'https://wrapper.example.test';
+import {
+  happyPathEvents,
+  happyPathExpected,
+  sessionNotFound404,
+} from './fixtures/adk-events';
+
+const BUNDLE = 'https://bundle.example.test';
 
 const fetchMock = jest.fn();
 
@@ -26,69 +34,114 @@ const RUN_BODY = {
   agent_name: 'jarvis_agent',
   message: 'hello',
   user_id: 'u-1',
-  session_id: null,
+  session_id: 'session-42',
 };
+
+const okRun = () =>
+  new Response(JSON.stringify(happyPathEvents), { status: 200 });
+const okCreate = () => new Response('{}', { status: 200 });
 
 describe('POST /api/agent/run', () => {
   const originalFetch = global.fetch;
-  const originalEnv = process.env.ADK_WRAPPER_URL;
+  const originalEnv = process.env.ADK_BUNDLE_URL;
 
   beforeEach(() => {
     global.fetch = fetchMock as unknown as typeof fetch;
-    process.env.ADK_WRAPPER_URL = WRAPPER;
+    process.env.ADK_BUNDLE_URL = BUNDLE;
   });
 
   afterAll(() => {
     global.fetch = originalFetch;
-    if (originalEnv === undefined) delete process.env.ADK_WRAPPER_URL;
-    else process.env.ADK_WRAPPER_URL = originalEnv;
+    if (originalEnv === undefined) delete process.env.ADK_BUNDLE_URL;
+    else process.env.ADK_BUNDLE_URL = originalEnv;
   });
 
-  it('forwards the body verbatim to {ADK_WRAPPER_URL}/run_agent with a timeout signal', async () => {
-    fetchMock.mockResolvedValue(
-      new Response(JSON.stringify({ response: 'hi', session_id: 's-1' }), {
-        status: 200,
-      }),
-    );
+  it('existing session: single native /run call with the ADK payload and a timeout signal', async () => {
+    fetchMock.mockResolvedValueOnce(okRun());
 
-    await POST(makeRequest(RUN_BODY));
+    const res = await POST(makeRequest(RUN_BODY));
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe(`${WRAPPER}/run_agent`);
+    expect(url).toBe(`${BUNDLE}/run`);
     expect(init.method).toBe('POST');
-    expect(init.body).toBe(JSON.stringify(RUN_BODY));
+    expect(JSON.parse(init.body)).toEqual({
+      app_name: 'jarvis_agent',
+      user_id: 'u-1',
+      session_id: 'session-42',
+      new_message: { role: 'user', parts: [{ text: 'hello' }] },
+    });
     expect(init.headers['Content-Type']).toBe('application/json');
     expect(init.signal).toBeInstanceOf(AbortSignal);
-  });
-
-  it("returns the wrapper's JSON and status verbatim (200)", async () => {
-    const wrapperJson = { response: 'hi from ADK', session_id: 's-1' };
-    fetchMock.mockResolvedValue(
-      new Response(JSON.stringify(wrapperJson), { status: 200 }),
-    );
-
-    const res = await POST(makeRequest(RUN_BODY));
-
     expect(res.status).toBe(200);
-    await expect(res.json()).resolves.toEqual(wrapperJson);
+    await expect(res.json()).resolves.toEqual({
+      response: happyPathExpected,
+      session_id: 'session-42',
+    });
   });
 
-  it('passes non-2xx wrapper statuses through untouched', async () => {
-    fetchMock.mockResolvedValue(
-      new Response(JSON.stringify({ detail: 'validation error' }), {
-        status: 422,
-      }),
+  it('null session (N5): creates session-${Date.now()} then runs; returns the generated id', async () => {
+    fetchMock.mockResolvedValueOnce(okCreate()).mockResolvedValueOnce(okRun());
+
+    const res = await POST(makeRequest({ ...RUN_BODY, session_id: null }));
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][0]).toMatch(
+      new RegExp(`^${BUNDLE}/apps/jarvis_agent/users/u-1/sessions/session-\\d+$`),
     );
+    expect(fetchMock.mock.calls[1][0]).toBe(`${BUNDLE}/run`);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.response).toBe(happyPathExpected);
+    expect(json.session_id).toMatch(/^session-\d+$/);
+  });
+
+  it('session-not-found (N6): create + retry exactly once, then success', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(sessionNotFound404), { status: 404 }),
+      )
+      .mockResolvedValueOnce(okCreate())
+      .mockResolvedValueOnce(okRun());
 
     const res = await POST(makeRequest(RUN_BODY));
 
-    expect(res.status).toBe(422);
-    await expect(res.json()).resolves.toEqual({ detail: 'validation error' });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({
+      response: happyPathExpected,
+      session_id: 'session-42',
+    });
   });
 
-  it('passes through the Authorization header when present', async () => {
-    fetchMock.mockResolvedValue(new Response('{}', { status: 200 }));
+  it('retry failure (N6): second run failure → 502 { error }', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(sessionNotFound404), { status: 404 }),
+      )
+      .mockResolvedValueOnce(okCreate())
+      .mockResolvedValueOnce(new Response('{"detail":"boom"}', { status: 500 }));
+
+    const res = await POST(makeRequest(RUN_BODY));
+
+    expect(res.status).toBe(502);
+    const json = await res.json();
+    expect(typeof json.error).toBe('string');
+  });
+
+  it('run succeeds with no model text → 502 "No model response in events"', async () => {
+    fetchMock.mockResolvedValueOnce(new Response('[]', { status: 200 }));
+
+    const res = await POST(makeRequest(RUN_BODY));
+
+    expect(res.status).toBe(502);
+    await expect(res.json()).resolves.toEqual({
+      error: 'No model response in events',
+    });
+  });
+
+  it('passes through the Authorization header when present (R2)', async () => {
+    fetchMock.mockResolvedValueOnce(okRun());
 
     await POST(makeRequest(RUN_BODY, { Authorization: 'Bearer tok-123' }));
 
@@ -97,7 +150,7 @@ describe('POST /api/agent/run', () => {
   });
 
   it('omits the Authorization header when absent', async () => {
-    fetchMock.mockResolvedValue(new Response('{}', { status: 200 }));
+    fetchMock.mockResolvedValueOnce(okRun());
 
     await POST(makeRequest(RUN_BODY));
 
@@ -105,7 +158,7 @@ describe('POST /api/agent/run', () => {
     expect(init.headers).not.toHaveProperty('Authorization');
   });
 
-  it('returns 502 { error } when the wrapper is unreachable', async () => {
+  it('returns 502 { error } when the bundle is unreachable', async () => {
     fetchMock.mockRejectedValue(new Error('connect ECONNREFUSED'));
 
     const res = await POST(makeRequest(RUN_BODY));
@@ -116,14 +169,14 @@ describe('POST /api/agent/run', () => {
     expect(json.error).toContain('ECONNREFUSED');
   });
 
-  it('returns 500 { error } and makes zero HTTP calls when ADK_WRAPPER_URL is unset', async () => {
-    delete process.env.ADK_WRAPPER_URL;
+  it('returns 500 { error } and makes zero HTTP calls when ADK_BUNDLE_URL is unset', async () => {
+    delete process.env.ADK_BUNDLE_URL;
 
     const res = await POST(makeRequest(RUN_BODY));
 
     expect(res.status).toBe(500);
     await expect(res.json()).resolves.toEqual({
-      error: 'ADK_WRAPPER_URL is not configured',
+      error: 'ADK_BUNDLE_URL is not configured',
     });
     expect(fetchMock).not.toHaveBeenCalled();
   });

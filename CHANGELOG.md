@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-07-18 13:52 UTC — [CC] Claude Code
+
+- **Created:** `agent_docs/CURRENT_APP/BIM002/RETROSPECTIVE.md` — BIM-002 CLOSED (pending N11 ceremony): all gates green; N7 OUTCOME A convicts the wrapper's /get_history as the lifetime empty-history root cause; 4 lesson candidates proposed (not written); QA F01–F03 → future FIX-002, F04 deferred
+- **Updated:** `session_2026-07-18.md`, `RECOVERY.md` — close-out state
+- **Reason:** BIM-002 close directive (Coordinator + Stark QA gate confirmation)
+
+## 2026-07-18 11:20 UTC — [CC] Claude Code
+
+- **Created:** `src/app/api/agent/_lib/adk.ts` — BIM-002 native ADK connector (session bootstrap, not-found→create→retry-once, reversed-event response selection, history normalization)
+- **Updated:** `src/app/api/agent/run/route.ts`, `.../history/route.ts` — internals ported from wrapper proxy to native ADK api_server; external contracts frozen
+- **Created:** `src/__tests__/api/fixtures/adk-events.ts`, `src/__tests__/api/adk-lib.test.ts`; **rewritten:** both route test files to the native contract (FLAG-2 ruling)
+- **Updated:** `.env.example` (`ADK_BUNDLE_URL` in, `ADK_WRAPPER_URL` retired — R1), `jest.config.js` (fixtures excluded from test collection — zone deviation, flagged)
+- **Reason:** BIM-002 "Kill the Wrapper" — approved plan + rulings (`agent_docs/RESPONSES/response_2026-07-18_163153_bim002-preflight-plan.md`); board 25 suites / 174 tests green
+
 ## 2026-07-18 10:14 UTC — [CC] Claude Code
 
 - **Updated:** `agent_docs/CURRENT_APP/FIX001/RETROSPECTIVE.md` — finalized: FIX-001 CLOSED, disposition PASS; reload-transcript display BLOCKED-UPSTREAM (wrapper /get_history latent v1 defect) → transfers to BIM-002 gate N7
