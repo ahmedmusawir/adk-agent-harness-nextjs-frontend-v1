@@ -23,6 +23,7 @@ jest.mock("@/store/chatStore", () => ({
 }));
 
 import { AgentSwitcher } from "@/components/chat/AgentSwitcher";
+import { agentsForUi } from "@/config/manifest";
 
 describe("AgentSwitcher", () => {
   beforeEach(() => {
@@ -33,29 +34,22 @@ describe("AgentSwitcher", () => {
     };
   });
 
-  it("renders all 5 agents from the configured registry", () => {
+  // BIM-003 (M-G7 sanctioned edit): buttons render the manifest LABELS, not
+  // raw agent names — the sidebar is manifest-driven now.
+  it("renders every manifest agent by its label", () => {
     render(<AgentSwitcher />);
-    expect(
-      screen.getByRole("button", { name: /greeting_agent/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /jarvis_agent/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /calc_agent/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /product_agent/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /ghl_mcp_agent/i }),
-    ).toBeInTheDocument();
+    for (const item of agentsForUi()) {
+      expect(
+        screen.getByRole("button", { name: item.label }),
+      ).toBeInTheDocument();
+    }
+    expect(screen.getAllByRole("button")).toHaveLength(agentsForUi().length);
   });
 
-  it("calls setSelectedAgent with the chosen agent when clicked", async () => {
+  it("calls setSelectedAgent with the agent NAME when its label is clicked", async () => {
     const user = userEvent.setup();
     render(<AgentSwitcher />);
-    await user.click(screen.getByRole("button", { name: /jarvis_agent/i }));
+    await user.click(screen.getByRole("button", { name: "Jarvis" }));
     expect(mockSetSelectedAgent).toHaveBeenCalledWith("jarvis_agent");
   });
 });

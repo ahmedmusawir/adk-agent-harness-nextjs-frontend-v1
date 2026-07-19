@@ -17,9 +17,12 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
+import { DEFAULT_AGENT as MANIFEST_DEFAULT_AGENT } from "@/config/manifest";
 import type { AgentName, AgentSessionMap, Message } from "@/types";
 
-const DEFAULT_AGENT: AgentName = "greeting_agent";
+// BIM-003: the default agent is the manifest's first entry (order is
+// meaningful). FIX-002's persisted selection still wins over this on reload.
+const DEFAULT_AGENT: AgentName = MANIFEST_DEFAULT_AGENT;
 
 interface ChatState {
   selectedAgent: AgentName;

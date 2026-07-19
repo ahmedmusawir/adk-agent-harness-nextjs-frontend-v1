@@ -13,6 +13,7 @@
 
 import { NextResponse } from 'next/server';
 
+import { resolveBundleEnvVar } from '@/config/manifest';
 import type { RunAgentRequest } from '@/types';
 
 import { ConnectorError, runAgentFlow } from '../_lib/adk';
@@ -22,18 +23,27 @@ import { ConnectorError, runAgentFlow } from '../_lib/adk';
 export const maxDuration = 90;
 
 export async function POST(req: Request) {
-  const baseUrl = process.env.ADK_BUNDLE_URL;
-  if (!baseUrl) {
-    return NextResponse.json(
-      { error: 'ADK_BUNDLE_URL is not configured' },
-      { status: 500 },
-    );
-  }
-
   const auth = req.headers.get('authorization'); // reserved auth slot (R2)
 
   try {
     const body = (await req.json()) as RunAgentRequest;
+
+    // BIM-003 (M3): the manifest decides which bundle serves this agent.
+    const urlEnv = resolveBundleEnvVar(body.agent_name);
+    if (!urlEnv) {
+      return NextResponse.json(
+        { error: `Unknown agent: ${body.agent_name}` },
+        { status: 400 },
+      );
+    }
+    const baseUrl = process.env[urlEnv];
+    if (!baseUrl) {
+      return NextResponse.json(
+        { error: `${urlEnv} is not configured` },
+        { status: 500 },
+      );
+    }
+
     const result = await runAgentFlow({ baseUrl, auth }, body);
     return NextResponse.json(result, { status: 200 });
   } catch (e) {

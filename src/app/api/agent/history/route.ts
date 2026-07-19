@@ -12,6 +12,7 @@
 
 import { NextResponse } from 'next/server';
 
+import { resolveBundleEnvVar } from '@/config/manifest';
 import type { GetHistoryRequest } from '@/types';
 
 import { normalizeHistory, sessionUrl } from '../_lib/adk';
@@ -19,18 +20,27 @@ import { normalizeHistory, sessionUrl } from '../_lib/adk';
 const HISTORY_TIMEOUT_MS = 30_000;
 
 export async function POST(req: Request) {
-  const baseUrl = process.env.ADK_BUNDLE_URL;
-  if (!baseUrl) {
-    return NextResponse.json(
-      { error: 'ADK_BUNDLE_URL is not configured' },
-      { status: 500 },
-    );
-  }
-
   const auth = req.headers.get('authorization'); // reserved auth slot (R2)
 
   try {
     const body = (await req.json()) as GetHistoryRequest;
+
+    // BIM-003 (M3): the manifest decides which bundle serves this agent.
+    const urlEnv = resolveBundleEnvVar(body.agent_name);
+    if (!urlEnv) {
+      return NextResponse.json(
+        { error: `Unknown agent: ${body.agent_name}` },
+        { status: 400 },
+      );
+    }
+    const baseUrl = process.env[urlEnv];
+    if (!baseUrl) {
+      return NextResponse.json(
+        { error: `${urlEnv} is not configured` },
+        { status: 500 },
+      );
+    }
+
     const upstream = await fetch(
       sessionUrl(baseUrl, body.agent_name, body.user_id, body.session_id),
       {

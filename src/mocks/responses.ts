@@ -120,5 +120,16 @@ function composeAgentVoiceResponse(
         ``,
         `Let me know if you want to filter further or pull a specific contact's full record.`,
       ].join("\n");
+
+    // BIM-003: agents come from the manifest now, so names beyond the five
+    // showcase cases above are legitimate — give them a generic voice
+    // (required for the four-line manifest test to work in mock mode).
+    default:
+      return [
+        `[${agentName}] Mock mode — I received: "${echo}".`,
+        ``,
+        `This agent has no showcase script yet; live mode routes it to its`,
+        `manifest bundle as usual.`,
+      ].join("\n");
   }
 }

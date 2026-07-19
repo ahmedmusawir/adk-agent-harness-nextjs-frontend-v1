@@ -37,17 +37,17 @@ const HISTORY_BODY = {
 
 describe('POST /api/agent/history', () => {
   const originalFetch = global.fetch;
-  const originalEnv = process.env.ADK_BUNDLE_URL;
+  const originalEnv = process.env.ADK_BUNDLE_URL_V1;
 
   beforeEach(() => {
     global.fetch = fetchMock as unknown as typeof fetch;
-    process.env.ADK_BUNDLE_URL = BUNDLE;
+    process.env.ADK_BUNDLE_URL_V1 = BUNDLE;
   });
 
   afterAll(() => {
     global.fetch = originalFetch;
-    if (originalEnv === undefined) delete process.env.ADK_BUNDLE_URL;
-    else process.env.ADK_BUNDLE_URL = originalEnv;
+    if (originalEnv === undefined) delete process.env.ADK_BUNDLE_URL_V1;
+    else process.env.ADK_BUNDLE_URL_V1 = originalEnv;
   });
 
   it('GETs the native session path with a timeout signal', async () => {
@@ -124,14 +124,26 @@ describe('POST /api/agent/history', () => {
     expect(typeof json.error).toBe('string');
   });
 
-  it('returns 500 { error } and makes zero HTTP calls when ADK_BUNDLE_URL is unset', async () => {
-    delete process.env.ADK_BUNDLE_URL;
+  it('returns 500 { error } and makes zero HTTP calls when ADK_BUNDLE_URL_V1 is unset', async () => {
+    delete process.env.ADK_BUNDLE_URL_V1;
 
     const res = await POST(makeRequest(HISTORY_BODY));
 
     expect(res.status).toBe(500);
     await expect(res.json()).resolves.toEqual({
-      error: 'ADK_BUNDLE_URL is not configured',
+      error: 'ADK_BUNDLE_URL_V1 is not configured',
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 { error } and zero HTTP calls for an agent not in the manifest (M-G4)', async () => {
+    const res = await POST(
+      makeRequest({ ...HISTORY_BODY, agent_name: 'ghost_agent' }),
+    );
+
+    expect(res.status).toBe(400);
+    await expect(res.json()).resolves.toEqual({
+      error: 'Unknown agent: ghost_agent',
     });
     expect(fetchMock).not.toHaveBeenCalled();
   });

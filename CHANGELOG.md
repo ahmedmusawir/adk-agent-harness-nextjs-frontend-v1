@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-19 12:42 UTC — [CC] Claude Code
+
+- **Created:** `config/agents.manifest.json` + `src/config/manifest.ts` — BIM-003: committed agent/bundle manifest (env-var names only, AM-2) with load-time validation; sidebar + routes now manifest-driven
+- **Updated:** `src/types/index.ts` — `AgentName` union retired (string + manifest validation); both agent routes — unknown agent → 400, missing bundle env → 500 naming the var; `AgentSwitcher` renders manifest labels; `chatStore` default = first manifest agent; mock responses gained a generic default branch
+- **Updated:** `.env.example` — `ADK_BUNDLE_URL` retired for per-bundle `ADK_BUNDLE_URL_V1` / `ADK_BUNDLE_URL_V2_LOCAL`
+- **Created:** `agent_docs/CURRENT_APP/BIM003/ACCEPTANCE_SPEC.md` — M-G8 QA deliverable. Board: 29 suites / 213 green
+- **Reason:** BIM-003 (Agent Manifest) — approved plan `agent_docs/RESPONSES/response_2026-07-19_183350_bim003-preflight-plan.md`
+
 ## 2026-07-19 11:29 UTC — [CC] Claude Code
 
 - **Created:** `src/utils/speech.ts` — FEAT-001: speakable-prose preparation (markdown stripped, code blocks announced as skipped, URLs → domain) + single-owner speech engine (new speak cancels previous, owner notified); v2 premium-TTS swaps inside this file only

@@ -2,16 +2,13 @@
 
 import { useRouter, usePathname } from "next/navigation";
 
+import { agentsForUi } from "@/config/manifest";
 import { useChatStore } from "@/store/chatStore";
 import type { AgentName } from "@/types";
 
-const AGENTS: AgentName[] = [
-  "greeting_agent",
-  "jarvis_agent",
-  "calc_agent",
-  "product_agent",
-  "ghl_mcp_agent",
-];
+// BIM-003 (M4): the sidebar renders from the committed manifest — adding an
+// agent is a JSON edit in config/agents.manifest.json, not a code change.
+const AGENTS = agentsForUi();
 
 export const AgentSwitcher = () => {
   const selectedAgent = useChatStore((state) => state.selectedAgent);
@@ -33,13 +30,13 @@ export const AgentSwitcher = () => {
       <p className="px-2 py-1 text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
         Agents
       </p>
-      {AGENTS.map((agent) => {
-        const isActive = selectedAgent === agent && pathname.startsWith("/chat");
+      {AGENTS.map(({ name, label }) => {
+        const isActive = selectedAgent === name && pathname.startsWith("/chat");
         return (
           <button
-            key={agent}
+            key={name}
             type="button"
-            onClick={() => handleSelect(agent)}
+            onClick={() => handleSelect(name)}
             className={
               "w-full text-left px-3 py-2 rounded-md text-sm font-mono transition-colors " +
               (isActive
@@ -47,7 +44,7 @@ export const AgentSwitcher = () => {
                 : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700/60")
             }
           >
-            {agent}
+            {label}
           </button>
         );
       })}

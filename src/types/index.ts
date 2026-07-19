@@ -14,13 +14,14 @@
 // Aliases and unions
 // =============================================================================
 
-/** @see DATA_CONTRACT.md §1.1 — finite union of the 5 configured agents */
-export type AgentName =
-  | 'greeting_agent'
-  | 'jarvis_agent'
-  | 'calc_agent'
-  | 'product_agent'
-  | 'ghl_mcp_agent';
+/**
+ * @see DATA_CONTRACT.md §1.1 as amended by BIM-003 (Amendment A3).
+ * The compile-time union is retired: agent names are declared in
+ * `config/agents.manifest.json` and validated at load by
+ * `src/config/manifest.ts` (KNOWN_AGENTS). Unknown names are rejected
+ * server-side with 400 — safety moved from the compiler to the manifest.
+ */
+export type AgentName = string;
 
 /** @see DATA_CONTRACT.md §1.3 — only `'user'` and `'assistant'` appear in this codebase */
 export type MessageRole = 'user' | 'assistant';

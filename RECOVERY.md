@@ -1,5 +1,28 @@
 # Recovery State
 
+Last action: **BIM-003 Engineer side COMPLETE — green board + ACCEPTANCE_SPEC** —
+2026-07-19 18:42. Agent roster is manifest-driven: `config/agents.manifest.json`
+(2 bundles, 5 agents, env-var NAMES only) + validated loader `src/config/manifest.ts`;
+routes 400 unknown-agent / 500 naming-the-var; sidebar renders labels; `AgentName`
+union retired. Board: baseline 28/197 → **29 suites / 213 green**, tsc clean, build
+clean. M-G1 grep proof empty. Zero git/cloud.
+
+Pending: **Coordinator** —
+1. ⚠️ Env migration BEFORE live testing: `.env.local` rename `ADK_BUNDLE_URL` →
+   `ADK_BUNDLE_URL_V1`.
+2. Manual gates via `agent_docs/CURRENT_APP/BIM003/ACCEPTANCE_SPEC.md` §3 (four-line
+   test, dual-bundle, error surfaces, loud-failure, mock flip).
+3. Commits BIM-003a/b/c/d (file lists in
+   `agent_docs/RESPONSES/response_2026-07-19_184207_bim003-execution-result.md`).
+4. QA bug report for FIX-002/FEAT-001 still incoming — sequence it vs BIM-003 commits
+   as you see fit (BIM-003 overlap: chatStore one line + route tests only).
+
+Earlier today (committed in `f03f08c`): FIX-002 + FEAT-001 engineer-complete; their
+RETROSPECTIVEs + module closes await the QA report. BIM002 lesson rulings L-a…L-d and
+F04 (ADK semantics) still open.
+
+--- (prior state below) ---
+
 Last action: **FEAT-001 Engineer side COMPLETE — green board** — 2026-07-19 17:29.
 Read-aloud rebuilt to spec through the new v2-seed `src/utils/speech.ts` (cleaned
 prose, "Code block skipped." announcements, single-owner cancel semantics, unmount
