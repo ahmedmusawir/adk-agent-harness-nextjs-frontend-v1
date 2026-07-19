@@ -1,5 +1,28 @@
 # Recovery State
 
+Last action: **BIM-004 Engineer side COMPLETE — green board + ACCEPTANCE_SPEC** —
+2026-07-19 19:19, branch `bim-004`. Projects UX built: `chat_sessions` index table
+(SQL ready to run), sessionIndexService (mode-flagged, degrade-not-block), store
+reshape (persisted shape unchanged — pointers only), SessionPanel (New Chat / resume /
+rename / archive), D4 adoption, D2 row-birth with D3 auto-titles. profileService is
+out of the chat path (FIX-001 merge-precedence ladder item resolved with its cause).
+Board: **32 suites / 234 green**, tsc clean, build clean. Baseline entered RED —
+BIM-003's manifest test hard-pinned the roster vs the Coordinator's moose_mcp_agent
+four-line test; repaired roster-agnostic (own commit suggested: `BIM-003fix`).
+
+Pending: **Coordinator** —
+1. ⚠️ Step zero for live QA: run `supabase/chat_sessions_setup.sql` ONCE in the
+   Supabase SQL Editor.
+2. Manual gates via `agent_docs/CURRENT_APP/BIM004/ACCEPTANCE_SPEC.md` §3
+   (P-G1 Projects moment, P-G2 birth+title, P-G3 rename/archive, P-G4 two-account
+   RLS, P-G5 table inspect, P-G6 adoption, P-G7 mock, P-G8 multi-bundle).
+3. Commits `BIM-003fix` + `BIM-004a–e` (file lists in
+   `agent_docs/RESPONSES/response_2026-07-19_191938_bim004-execution-result.md`).
+4. Still queued: BIM-003 manual gates (untested) · FIX-002/FEAT-001 QA report +
+   module closes · BIM-002 lesson rulings L-a…L-d · F04 (ADK semantics).
+
+--- (prior state below) ---
+
 Last action: **BIM-003 Engineer side COMPLETE — green board + ACCEPTANCE_SPEC** —
 2026-07-19 18:42. Agent roster is manifest-driven: `config/agents.manifest.json`
 (2 bundles, 5 agents, env-var NAMES only) + validated loader `src/config/manifest.ts`;

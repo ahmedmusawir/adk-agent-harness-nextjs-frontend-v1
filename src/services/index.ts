@@ -11,3 +11,4 @@
 export { chatService } from './chatService';
 export { profileService } from './profileService';
 export { instructionsService } from './instructionsService';
+export { sessionIndexService, titleFromMessage } from './sessionIndexService';

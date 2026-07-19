@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-19 13:19 UTC — [CC] Claude Code
+
+- **Created:** `supabase/chat_sessions_setup.sql` — BIM-004 (A4): chat_sessions INDEX table (never transcripts) + RLS + listing index
+- **Created:** `src/services/sessionIndexService.ts` (+ mock index, + `SessionIndexEntry` type) — mode-flagged session index CRUD, degrade-not-block
+- **Updated:** `src/store/chatStore.ts` — D6 reshape: active-session pointer + in-memory session lists; persisted shape unchanged (pointers only)
+- **Updated:** `src/app/(cyberize)/chat/ChatPageContent.tsx` — profileService out of the chat path; D4 adoption ("Restored chat"); D2 row birth with D3 auto-titles; session-switch refetch
+- **Created:** `src/components/chat/SessionPanel.tsx` (+ CyberizeSidebar slot) — Conversations panel: New Chat, resume, rename, archive
+- **Fixed:** `src/__tests__/config/manifest.test.ts` — roster-agnostic (BIM-003 defect: test contradicted M-G2's zero-code-change promise; surfaced by moose_mcp_agent addition)
+- **Created:** `agent_docs/CURRENT_APP/BIM004/ACCEPTANCE_SPEC.md`. Board: 32 suites / 234 green
+- **Reason:** BIM-004 (Projects UX) — approved plan `agent_docs/RESPONSES/response_2026-07-19_190517_bim004-preflight-plan.md`
+
 ## 2026-07-19 12:42 UTC — [CC] Claude Code
 
 - **Created:** `config/agents.manifest.json` + `src/config/manifest.ts` — BIM-003: committed agent/bundle manifest (env-var names only, AM-2) with load-time validation; sidebar + routes now manifest-driven
