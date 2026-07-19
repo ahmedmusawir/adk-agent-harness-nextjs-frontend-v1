@@ -28,6 +28,8 @@ interface ChatState {
   messagesByAgent: Record<string, Message[]>;
   agentSessions: AgentSessionMap;
   isLoading: boolean;
+  /** True while a history fetch is in flight (FIX-002b) — never persisted. */
+  isHistoryLoading: boolean;
   error: string | null;
 
   setSelectedAgent: (name: AgentName) => void;
@@ -40,6 +42,7 @@ interface ChatState {
   setAgentSessions: (sessions: AgentSessionMap) => void;
   setSession: (agent: AgentName, sessionId: string) => void;
   setLoading: (loading: boolean) => void;
+  setHistoryLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
 }
@@ -50,6 +53,7 @@ const INITIAL_STATE = {
   messagesByAgent: {} as Record<string, Message[]>,
   agentSessions: {} as AgentSessionMap,
   isLoading: false,
+  isHistoryLoading: false,
   error: null,
 };
 
@@ -88,6 +92,7 @@ export const useChatStore = create<ChatState>()(
           agentSessions: { ...state.agentSessions, [agent]: sessionId },
         })),
       setLoading: (loading) => set({ isLoading: loading }),
+      setHistoryLoading: (loading) => set({ isHistoryLoading: loading }),
       setError: (error) => set({ error }),
       reset: () => set(INITIAL_STATE),
     }),
@@ -97,9 +102,13 @@ export const useChatStore = create<ChatState>()(
       // it and returns undefined storage → store degrades to in-memory
       // exactly as before FIX-001.
       storage: createJSONStorage(() => window.localStorage),
-      // F4 fence: ONLY the agent→session bookmark is persisted. Message
-      // content (messagesByAgent) must never reach localStorage.
-      partialize: (state) => ({ agentSessions: state.agentSessions }),
+      // F4 fence: ONLY the agent→session bookmark and the selected agent are
+      // persisted (FIX-002a). Message content (messagesByAgent) must never
+      // reach localStorage.
+      partialize: (state) => ({
+        agentSessions: state.agentSessions,
+        selectedAgent: state.selectedAgent,
+      }),
     },
   ),
 );

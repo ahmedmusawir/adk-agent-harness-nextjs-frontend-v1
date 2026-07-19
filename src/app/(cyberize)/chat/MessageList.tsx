@@ -23,12 +23,29 @@ export const MessageList = ({
   const messages =
     useChatStore((s) => s.messagesByAgent[s.selectedAgent]) ?? [];
   const isLoading = useChatStore((s) => s.isLoading);
+  const isHistoryLoading = useChatStore((s) => s.isHistoryLoading);
   const error = useChatStore((s) => s.error);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length, isLoading]);
+
+  // FIX-002b: while history is in flight, show the loading indicator instead
+  // of the misleading "start the conversation" empty-state.
+  if (isHistoryLoading && messages.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div
+          className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 animate-pulse"
+          role="status"
+          aria-label="Loading conversation"
+        >
+          <span>Loading conversation…</span>
+        </div>
+      </div>
+    );
+  }
 
   if (messages.length === 0 && !isLoading && !error) {
     return (

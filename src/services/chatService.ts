@@ -2,7 +2,7 @@
  * chatService — mode-flagged (BIM-001).
  *
  * `NEXT_PUBLIC_CHAT_MODE=live` routes chat through the internal /api/agent/*
- * proxies to the real ADK wrapper. Any other value (or unset) keeps the
+ * handlers to the ADK bundle (native, BIM-002). Any other value (or unset) keeps the
  * Phase-3 mock path — the app must never accidentally ship live-wired.
  * Method signatures unchanged from the FFM contract.
  *
@@ -54,7 +54,7 @@ export const chatService = {
         };
       } catch (e) {
         return {
-          response: `Error: Could not reach Agent Wrapper. Details: ${e}`,
+          response: `Error: Could not reach Agent Service. Details: ${e}`,
           session_id: input.session_id ?? '',
         };
       }
@@ -100,11 +100,12 @@ export const chatService = {
 };
 
 /**
- * BACKEND_SWAP_NOTES (amended by BIM-001 — Amendment §A1.1)
+ * BACKEND_SWAP_NOTES (amended by BIM-001 §A1.1; wording refreshed FIX-002c —
+ * the wrapper is retired, routes speak native ADK per BIM-002 §A2)
  *
- * The seam moved: service methods call internal Next.js route handlers, which
- * proxy server-side to the Python wrapper. Phase B (BIM-002) swaps ONLY the
- * route handler internals; this service and every component above it stay put.
+ * The seam: service methods call internal Next.js route handlers, which talk
+ * server-side to the ADK bundle's api_server directly. This service and every
+ * component above it stay put across backend swaps.
  *
  * Method       | Endpoint                    | Timeout | Notes
  * -------------|-----------------------------|---------|---------------------------------
@@ -113,7 +114,7 @@ export const chatService = {
  *
  * Error handling per DATA_CONTRACT §1.5 + D1 ruling (2026-07-16, option b):
  *   On client-side HTTP error, sendMessage resolves with:
- *     { response: "Error: Could not reach Agent Wrapper. Details: <e>",
+ *     { response: "Error: Could not reach Agent Service. Details: <e>",
  *       session_id: <request's session_id ?? ''> }
  *   `response` defaults to "Error: No response content." if missing from response body.
  *   getHistory failure → console.error + [] — never blocks chat.

@@ -46,8 +46,11 @@ describe("chatStore persistence (FIX-001)", () => {
       const raw = localStorage.getItem(STORAGE_KEY) as string;
       expect(raw).not.toBeNull();
       const stored = JSON.parse(raw);
+      // FIX-002a: the persisted shape is the bookmark + the selected agent —
+      // and NOTHING else. Message content stays out (F4/X4 fence).
       expect(stored.state).toEqual({
         agentSessions: { greeting_agent: "sess-123" },
+        selectedAgent: "greeting_agent",
       });
       expect(stored.state.messagesByAgent).toBeUndefined();
       expect(raw).not.toContain("SECRET-TRANSCRIPT-CONTENT");
@@ -70,6 +73,54 @@ describe("chatStore persistence (FIX-001)", () => {
       });
       // Non-persisted state untouched by hydration
       expect(useChatStore.getState().messagesByAgent).toEqual({});
+    });
+  });
+
+  it("round-trip: setSelectedAgent persists the selection (FIX-002a / X1)", () => {
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { useChatStore } = require("@/store/chatStore");
+      useChatStore.getState().setSelectedAgent("jarvis_agent");
+
+      const raw = localStorage.getItem(STORAGE_KEY) as string;
+      expect(raw).not.toBeNull();
+      const stored = JSON.parse(raw);
+      expect(stored.state.selectedAgent).toBe("jarvis_agent");
+      // lastSelectedAgent is UI-transient — never persisted
+      expect(stored.state.lastSelectedAgent).toBeUndefined();
+    });
+  });
+
+  it("hydration: a pre-seeded selectedAgent wins over the default (FIX-002a / X1)", () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        state: {
+          agentSessions: { jarvis_agent: "sess-restored" },
+          selectedAgent: "jarvis_agent",
+        },
+        version: 0,
+      }),
+    );
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { useChatStore } = require("@/store/chatStore");
+      expect(useChatStore.getState().selectedAgent).toBe("jarvis_agent");
+    });
+  });
+
+  it("hydration: stored value without selectedAgent keeps the default (back-compat)", () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        state: { agentSessions: { jarvis_agent: "sess-restored" } },
+        version: 0,
+      }),
+    );
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { useChatStore } = require("@/store/chatStore");
+      expect(useChatStore.getState().selectedAgent).toBe("greeting_agent");
     });
   });
 

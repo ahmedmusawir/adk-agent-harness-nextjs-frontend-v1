@@ -1,5 +1,36 @@
 # Recovery State
 
+Last action: **FEAT-001 Engineer side COMPLETE — green board** — 2026-07-19 17:29.
+Read-aloud rebuilt to spec through the new v2-seed `src/utils/speech.ts` (cleaned
+prose, "Code block skipped." announcements, single-owner cancel semantics, unmount
+cancel). Drift recorded: message-copy + code-copy already existed on disk (brief said
+decorative); input-copy ruled SKIP. Board: **28 suites / 197 tests green**, tsc clean,
+build clean. Field note: Tailwind content scanner vs regex char classes (build-only
+failure, fixed). Commits FEAT-001a/b + manual script:
+`agent_docs/RESPONSES/response_2026-07-19_172910_feat001-execution-result.md`.
+
+ALSO awaiting Coordinator (from earlier today): **FIX-002** manual gates X1–X5 +
+commits FIX-002a/b/c (`response_2026-07-19_141545_fix002-execution-result.md`).
+FEAT-001 and FIX-002 files have ZERO overlap — stage independently.
+
+Prior context: FIX-002 close-out below.
+
+--- 
+
+Earlier: **FIX-002 Engineer side COMPLETE — green board** — 2026-07-19 14:15.
+QA triple-fix done: F01 selection persists (`partialize` + `selectedAgent`), F02
+"Loading conversation…" state on history fetches, F03 sentinel reads "Agent Service".
+Baseline 25/174 → **26 suites / 180 green**, tsc clean, build clean. X6: exactly 2
+pre-existing test files touched at sanctioned pins. Zero git/cloud by Engineer.
+
+Pending: **Coordinator** — manual gates X1–X5 (script in
+`agent_docs/RESPONSES/response_2026-07-19_141545_fix002-execution-result.md`), then
+commits FIX-002a/b/c + docs (file lists in the same artifact). RETROSPECTIVE.md at
+module close. Also still open: lesson rulings L-a…L-d (BIM-002), F04 (deferred, ADK
+semantics), N11-evening docs commit if not yet made.
+
+--- (prior state below) ---
+
 Last action: **BIM-002 Engineer side COMPLETE — green board** — 2026-07-18 17:20. The
 wrapper's brains are ported: both agent routes now speak native ADK api_server protocol
 via `src/app/api/agent/_lib/adk.ts` (session bootstrap, not-found→create→retry-once,
@@ -18,11 +49,13 @@ reload-history fixed free by the port · N8 · N3 · N9. jest.config deviation R
 RETROSPECTIVE.md written (4 lesson candidates PROPOSED, not written). QA findings
 F01–F03 routed to future FIX-002; F04 deferred pending ADK semantics.
 
+**N11 CEREMONY COMPLETE — 2026-07-18 evening (Coordinator-confirmed).** The wrapper's
+Cloud Run service is paused and the system runs without it. The wrapper is formally
+retired with honors. **BIM-002 is fully CLOSED.**
+
 Pending: **Coordinator** —
-1. Docs commit (file list in session log 19:52 / on-screen close-out message).
-2. **N11 ceremony:** pause the wrapper's Cloud Run service → one more live message →
-   wrapper formally retired with honors.
-3. Rulings on lesson candidates L-a…L-d (filenames proposed in BIM002/RETROSPECTIVE.md).
+1. Docs commit if not yet made (file list in session log 19:52 entry).
+2. Rulings on lesson candidates L-a…L-d (filenames proposed in BIM002/RETROSPECTIVE.md).
 
 Next step: FIX-002 authoring (F01–F03) when the Architect picks it up. Carried items:
 F04 (ADK semantics), merge-precedence revisit when profileService goes real, R2 public

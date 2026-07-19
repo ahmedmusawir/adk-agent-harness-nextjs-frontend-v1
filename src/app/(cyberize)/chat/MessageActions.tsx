@@ -17,7 +17,7 @@
  * Mobile-first (Lesson 6): visible buttons are h-9 with generous spacing; comfortable touch.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Check,
   Copy,
@@ -28,6 +28,13 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
+
+import {
+  isSpeechSupported,
+  prepareSpeechText,
+  speak,
+  stopSpeaking,
+} from "@/utils/speech";
 
 interface MessageActionsProps {
   role: "user" | "assistant";
@@ -137,21 +144,33 @@ function CopyButton({ content }: { content: string }) {
 
 function ReadAloudButton({ content }: { content: string }) {
   const [speaking, setSpeaking] = useState(false);
-  const supported =
-    typeof window !== "undefined" && "speechSynthesis" in window;
+  // Ref mirrors `speaking` so the unmount cleanup sees the live value, and
+  // the utility's owner-callback can never leave this icon stale.
+  const speakingRef = useRef(false);
+  const supported = isSpeechSupported();
+
+  const handleStateChange = (isSpeaking: boolean) => {
+    speakingRef.current = isSpeaking;
+    setSpeaking(isSpeaking);
+  };
+
+  // FEAT-001: cancel our own speech if this message unmounts mid-read
+  // (navigation, thread truncation).
+  useEffect(() => {
+    return () => {
+      if (speakingRef.current) stopSpeaking();
+    };
+  }, []);
 
   const handleClick = () => {
     if (!supported) return;
     if (speaking) {
-      window.speechSynthesis.cancel();
-      setSpeaking(false);
+      stopSpeaking(); // notifies us via the owner callback
       return;
     }
-    const utterance = new window.SpeechSynthesisUtterance(content);
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(utterance);
-    setSpeaking(true);
+    // Cleaned prose only: markdown stripped, code blocks announced as
+    // skipped, URLs collapsed to domains (FEAT-001 plan rulings).
+    speak(prepareSpeechText(content), handleStateChange);
   };
 
   return (

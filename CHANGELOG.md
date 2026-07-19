@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-07-19 11:29 UTC — [CC] Claude Code
+
+- **Created:** `src/utils/speech.ts` — FEAT-001: speakable-prose preparation (markdown stripped, code blocks announced as skipped, URLs → domain) + single-owner speech engine (new speak cancels previous, owner notified); v2 premium-TTS swaps inside this file only
+- **Updated:** `src/app/(cyberize)/chat/MessageActions.tsx` — ReadAloudButton wired through the utility: cleaned text, cross-message cancel, unmount cancel
+- **Tests:** new `speech.test.ts` (13) + `MessageActions.readaloud.test.tsx` (4) — board 28 suites / 197 green; existing tests byte-unmodified
+- **Reason:** FEAT-001 (accessibility: read-aloud + copy) — approved plan + rulings (ANNOUNCE / SKIP); drift recorded: copy scopes already existed on disk
+
+## 2026-07-19 08:15 UTC — [CC] Claude Code
+
+- **Updated:** `src/store/chatStore.ts` — FIX-002a: `selectedAgent` joins the persist partialize (restore selection on reload); FIX-002b: `isHistoryLoading` flag
+- **Updated:** `src/app/(cyberize)/chat/ChatPageContent.tsx`, `MessageList.tsx` — FIX-002b: history fetches signal a "Loading conversation…" state; empty-state suppressed while in flight
+- **Updated:** `src/services/chatService.ts` — FIX-002c: sentinel now "Agent Service" (wrapper retired); sanctioned comment wording refresh
+- **Tests:** persist suite extended (shape pin + 3 cases), 2 sentinel pins updated, new `MessageList.loading.test.tsx` — board 26 suites / 180 green
+- **Reason:** FIX-002 QA triple-fix (F01/F02/F03) — approved plan `agent_docs/RESPONSES/response_2026-07-19_140029_fix002-preflight-plan.md`
+
 ## 2026-07-18 13:52 UTC — [CC] Claude Code
 
 - **Created:** `agent_docs/CURRENT_APP/BIM002/RETROSPECTIVE.md` — BIM-002 CLOSED (pending N11 ceremony): all gates green; N7 OUTCOME A convicts the wrapper's /get_history as the lifetime empty-history root cause; 4 lesson candidates proposed (not written); QA F01–F03 → future FIX-002, F04 deferred

@@ -19,6 +19,7 @@ export const ChatPageContent = () => {
   const setAgentSessions = useChatStore((s) => s.setAgentSessions);
   const setSession = useChatStore((s) => s.setSession);
   const setLoading = useChatStore((s) => s.setLoading);
+  const setHistoryLoading = useChatStore((s) => s.setHistoryLoading);
   const setError = useChatStore((s) => s.setError);
 
   const userId =
@@ -52,12 +53,19 @@ export const ChatPageContent = () => {
       setAgentSessions(sessions);
       const sessionId = sessions[selectedAgent];
       if (sessionId) {
-        const history = await chatService.getHistory({
-          agent_name: selectedAgent,
-          user_id: userId,
-          session_id: sessionId,
-        });
-        setMessagesForAgent(selectedAgent, history);
+        // FIX-002b: signal the history fetch; getHistory resolves-not-throws,
+        // but finally keeps the flag honest regardless.
+        setHistoryLoading(true);
+        try {
+          const history = await chatService.getHistory({
+            agent_name: selectedAgent,
+            user_id: userId,
+            session_id: sessionId,
+          });
+          setMessagesForAgent(selectedAgent, history);
+        } finally {
+          setHistoryLoading(false);
+        }
       } else {
         setMessagesForAgent(selectedAgent, []);
       }
@@ -82,14 +90,16 @@ export const ChatPageContent = () => {
       setMessagesForAgent(selectedAgent, []);
       return;
     }
+    setHistoryLoading(true); // FIX-002b
     void chatService
       .getHistory({
         agent_name: selectedAgent,
         user_id: userId,
         session_id: sessionId,
       })
-      .then((history) => setMessagesForAgent(selectedAgent, history));
-  }, [selectedAgent, userId, setMessagesForAgent]);
+      .then((history) => setMessagesForAgent(selectedAgent, history))
+      .finally(() => setHistoryLoading(false));
+  }, [selectedAgent, userId, setMessagesForAgent, setHistoryLoading]);
 
   const runSendMessage = async (content: string) => {
     if (!userId) return;

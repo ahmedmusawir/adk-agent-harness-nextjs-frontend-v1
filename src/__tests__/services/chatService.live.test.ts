@@ -102,7 +102,7 @@ describe('chatService live mode', () => {
       const result = await chatService.sendMessage(RUN_INPUT);
 
       expect(result.response).toMatch(
-        /^Error: Could not reach Agent Wrapper\. Details: /,
+        /^Error: Could not reach Agent Service\. Details: /,
       );
       expect(result.response).toContain('network down');
       expect(result.session_id).toBe('sess-existing');
@@ -129,7 +129,7 @@ describe('chatService live mode', () => {
       const result = await chatService.sendMessage(RUN_INPUT);
 
       expect(result.response).toContain(
-        'Error: Could not reach Agent Wrapper.',
+        'Error: Could not reach Agent Service.',
       );
       expect(result.response).toContain('HTTP 502');
       expect(result.session_id).toBe('sess-existing');
