@@ -110,28 +110,42 @@ describe('resolution (M-G3 — each agent to its own bundle)', () => {
 });
 
 describe('the committed manifest', () => {
-  it('is valid, carries the five roster agents on v1, and declares v2-local', () => {
-    expect(KNOWN_AGENTS).toEqual([
+  // ROSTER-AGNOSTIC by design (re-applied on this lineage): M-G2 promises that
+  // adding an agent is a JSON edit with ZERO code changes — so these tests
+  // assert structural invariants, never an exact roster. The original five
+  // must be PRESENT; extras added via the four-line test are legitimate.
+  it('is valid, includes the original five agents, and declares v1 + v2-local', () => {
+    for (const original of [
       'greeting_agent',
       'jarvis_agent',
       'calc_agent',
       'product_agent',
       'ghl_mcp_agent',
-    ]);
-    expect(MANIFEST.bundles.map((b) => b.id)).toEqual(['v1', 'v2-local']);
+    ]) {
+      expect(KNOWN_AGENTS).toContain(original);
+    }
+    expect(MANIFEST.bundles.map((b) => b.id)).toEqual(
+      expect.arrayContaining(['v1', 'v2-local']),
+    );
+  });
+
+  it('every declared agent resolves to a declared bundle env var', () => {
+    const declaredEnvVars = MANIFEST.bundles.map((b) => b.urlEnv);
     for (const agent of KNOWN_AGENTS) {
-      expect(resolveBundleEnvVar(agent)).toBe('ADK_BUNDLE_URL_V1');
+      expect(declaredEnvVars).toContain(resolveBundleEnvVar(agent));
     }
   });
 
-  it('defaults to the first manifest agent (FLAG-B)', () => {
-    expect(DEFAULT_AGENT).toBe('greeting_agent');
+  it('defaults to the first manifest agent, whichever it is (FLAG-B)', () => {
+    expect(DEFAULT_AGENT).toBe(MANIFEST.agents[0].name);
   });
 
-  it('exposes ui items with human labels', () => {
+  it('exposes one ui item per agent with a non-empty label', () => {
     const items = agentsForUi();
-    expect(items[0]).toEqual({ name: 'greeting_agent', label: 'Greeting Agent' });
-    expect(items).toHaveLength(5);
+    expect(items).toHaveLength(KNOWN_AGENTS.length);
+    for (const item of items) {
+      expect(item.label.length).toBeGreaterThan(0);
+    }
   });
 
   it('carries env-var NAMES, never URLs (AM-2)', () => {

@@ -1,6 +1,28 @@
 # Recovery State
 
-Last action: **BIM-003 Engineer side COMPLETE — green board + ACCEPTANCE_SPEC** —
+Last action: **BIM-005 Engineer side COMPLETE — green board + ACCEPTANCE_SPEC** —
+2026-07-20 00:25, branch `bim-005` (single-chat lineage; **BIM-004 Projects UX is
+deliberately PARKED on branch `bim-004`, merged nowhere** — Coordinator direction).
+Mission Control is LIVE: GET/PUT `/api/agent/instructions` against GCS with the
+backup-before-write law (versions/{ISO}.bak first; failed backup aborts), ADC
+credentials (zero credential env), instructionsService live mode (components
+byte-untouched). Board: **31 suites / 232 green**, tsc clean, build clean, C-G5 grep
+clean. Baseline entered red (roster-pin again on this lineage) — repaired.
+
+Pending: **Coordinator** —
+1. ⚠️ Pre-step: grant the service account WRITE on the bucket
+   (`roles/storage.objectUser`) — documented read-only today. Set `GCS_BUCKET` +
+   `GCS_BASE_FOLDER` in `.env.local`.
+2. Manual gates via `agent_docs/CURRENT_APP/BIM005/ACCEPTANCE_SPEC.md` §3 — headline:
+   **C-G4 the pirate test**.
+3. Commits `BIM-003fix` (re-applied) + `BIM-005a/b/c` (file lists in
+   `agent_docs/RESPONSES/response_2026-07-20_002531_bim005-execution-result.md`).
+4. Still queued: BIM-003 manual gates · FIX-002/FEAT-001 QA report · BIM-002 lessons
+   L-a…L-d · F04 · BIM-004 disposition (parked).
+
+--- (prior state below) ---
+
+Earlier: **BIM-003 Engineer side COMPLETE — green board + ACCEPTANCE_SPEC** —
 2026-07-19 18:42. Agent roster is manifest-driven: `config/agents.manifest.json`
 (2 bundles, 5 agents, env-var NAMES only) + validated loader `src/config/manifest.ts`;
 routes 400 unknown-agent / 500 naming-the-var; sidebar renders labels; `AgentName`

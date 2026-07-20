@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-07-19 18:25 UTC — [CC] Claude Code
+
+- **Created:** `src/app/api/agent/instructions/{route.ts,_lib/gcsInstructions.ts}` — BIM-005: Mission Control LIVE. GET/PUT instructions against GCS with the backup-before-write law (versions/{ISO}.bak first; failed backup aborts the save); 400 unknown agent / 500 naming the env var / 502; ADC credentials (zero credential env vars)
+- **Updated:** `src/services/instructionsService.ts` — live mode behind NEXT_PUBLIC_CHAT_MODE (chatService pattern, signatures frozen, mock path untouched); `.env.example` + `GCS_BUCKET`/`GCS_BASE_FOLDER`
+- **Added dep (I2 sanctioned):** `@google-cloud/storage`
+- **Fixed:** `src/__tests__/config/manifest.test.ts` — roster-agnostic repair re-applied on this lineage (entering baseline was red)
+- **Created:** `agent_docs/CURRENT_APP/BIM005/ACCEPTANCE_SPEC.md`. Board: 31 suites / 232 green
+- **Reason:** BIM-005 (Mission Control LIVE) — approved plan `agent_docs/RESPONSES/response_2026-07-20_001929_bim005-preflight-plan.md`
+
 ## 2026-07-19 12:42 UTC — [CC] Claude Code
 
 - **Created:** `config/agents.manifest.json` + `src/config/manifest.ts` — BIM-003: committed agent/bundle manifest (env-var names only, AM-2) with load-time validation; sidebar + routes now manifest-driven
