@@ -1,26 +1,31 @@
 # Recovery State
 
-Last action: **BIM-005 Engineer side COMPLETE — green board + ACCEPTANCE_SPEC** —
-2026-07-20 00:25, branch `bim-005` (single-chat lineage; **BIM-004 Projects UX is
-deliberately PARKED on branch `bim-004`, merged nowhere** — Coordinator direction).
-Mission Control is LIVE: GET/PUT `/api/agent/instructions` against GCS with the
-backup-before-write law (versions/{ISO}.bak first; failed backup aborts), ADC
-credentials (zero credential env), instructionsService live mode (components
-byte-untouched). Board: **31 suites / 232 green**, tsc clean, build clean, C-G5 grep
-clean. Baseline entered red (roster-pin again on this lineage) — repaired.
+Last action: **MERGE — `bim-004` into `bim-005`** (2026-07-20). The branch mix-up is
+resolved: this line now carries **BOTH** BIM-004 (Projects UX: chat_sessions index,
+sessionIndexService, SessionPanel — New Chat / resume / rename / archive, D4 adoption)
+AND BIM-005 (Mission Control LIVE: GCS instructions with the backup-before-write law,
+ADC credentials). The two modules share zero source files; conflicts were docs + one
+test comment, resolved. Combined green board: run post-merge (see session log).
+Background: `single-chat-agents` (+ optional BIM-005 fast-forward) preserves the
+single-session line; pristine tested single-chat stays frozen at `bim-003`/`main`.
 
 Pending: **Coordinator** —
-1. ⚠️ Pre-step: grant the service account WRITE on the bucket
-   (`roles/storage.objectUser`) — documented read-only today. Set `GCS_BUCKET` +
-   `GCS_BASE_FOLDER` in `.env.local`.
-2. Manual gates via `agent_docs/CURRENT_APP/BIM005/ACCEPTANCE_SPEC.md` §3 — headline:
-   **C-G4 the pirate test**.
-3. Commits `BIM-003fix` (re-applied) + `BIM-005a/b/c` (file lists in
-   `agent_docs/RESPONSES/response_2026-07-20_002531_bim005-execution-result.md`).
-4. Still queued: BIM-003 manual gates · FIX-002/FEAT-001 QA report · BIM-002 lessons
-   L-a…L-d · F04 · BIM-004 disposition (parked).
+1. `git add -A && git commit` the resolved merge (Engineer ran zero git; conflict
+   files were resolved by edit only).
+2. Live-QA pre-steps, ONE TIME EACH: run `supabase/chat_sessions_setup.sql` in the
+   Supabase SQL Editor (BIM-004) · grant the SA WRITE on the GCS bucket
+   (`roles/storage.objectUser`) + set `GCS_BUCKET`/`GCS_BASE_FOLDER` (BIM-005).
+3. Manual-gate backlog, in whatever order suits: BIM-003 spec · BIM-004 spec
+   (P-G1 Projects moment) · BIM-005 spec (**C-G4 pirate test**).
+4. Still queued: FIX-002/FEAT-001 QA report · BIM-002 lessons L-a…L-d · F04.
 
---- (prior state below) ---
+--- (prior per-module records below) ---
+
+Earlier: **BIM-005 Engineer side COMPLETE** — 2026-07-20 00:25 (31/232 green; details
+in `response_2026-07-20_002531_bim005-execution-result.md`).
+
+Earlier: **BIM-004 Engineer side COMPLETE** — 2026-07-19 19:19 (32/234 green; details
+in `response_2026-07-19_191938_bim004-execution-result.md`).
 
 Earlier: **BIM-003 Engineer side COMPLETE — green board + ACCEPTANCE_SPEC** —
 2026-07-19 18:42. Agent roster is manifest-driven: `config/agents.manifest.json`

@@ -110,7 +110,8 @@ describe('resolution (M-G3 — each agent to its own bundle)', () => {
 });
 
 describe('the committed manifest', () => {
-  // ROSTER-AGNOSTIC by design (re-applied on this lineage): M-G2 promises that
+  // ROSTER-AGNOSTIC by design (BIM-004 baseline repair; landed on both
+  // lineages, unified at the bim-004→bim-005 merge): M-G2 promises that
   // adding an agent is a JSON edit with ZERO code changes — so these tests
   // assert structural invariants, never an exact roster. The original five
   // must be PRESENT; extras added via the four-line test are legitimate.

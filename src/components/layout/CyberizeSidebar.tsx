@@ -9,6 +9,7 @@ import { useChatStore } from "@/store/chatStore";
 import { AppRole } from "@/utils/app-role";
 import { ThemeToggle } from "@/components/global/ThemeToggle";
 import { AgentSwitcher } from "@/components/chat/AgentSwitcher";
+import { SessionPanel } from "@/components/chat/SessionPanel";
 
 export const CyberizeSidebar = () => {
   const user = useAuthStore((s) => s.user);
@@ -66,6 +67,8 @@ export const CyberizeSidebar = () => {
 
       <div className="flex-1 overflow-y-auto">
         <AgentSwitcher />
+        {/* BIM-004: the selected agent's conversation list (Projects UX) */}
+        <SessionPanel />
       </div>
 
       <div className="border-t border-zinc-200 dark:border-zinc-600 p-3 flex items-center gap-2">

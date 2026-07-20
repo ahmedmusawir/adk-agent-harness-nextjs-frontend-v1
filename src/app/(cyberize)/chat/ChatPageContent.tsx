@@ -5,7 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useChatStore } from "@/store/chatStore";
 import { chatService } from "@/services/chatService";
-import { profileService } from "@/services/profileService";
+import {
+  sessionIndexService,
+  titleFromMessage,
+} from "@/services/sessionIndexService";
+import type { AgentName } from "@/types";
 
 import { ChatInput } from "./ChatInput";
 import { MessageList } from "./MessageList";
@@ -16,8 +20,12 @@ export const ChatPageContent = () => {
   const setMessagesForAgent = useChatStore((s) => s.setMessagesForAgent);
   const appendMessageForAgent = useChatStore((s) => s.appendMessageForAgent);
   const truncateAfterIndex = useChatStore((s) => s.truncateAfterIndex);
-  const setAgentSessions = useChatStore((s) => s.setAgentSessions);
   const setSession = useChatStore((s) => s.setSession);
+  const setSessionList = useChatStore((s) => s.setSessionList);
+  const upsertSessionEntry = useChatStore((s) => s.upsertSessionEntry);
+  const activeSessionId = useChatStore(
+    (s) => s.agentSessions[s.selectedAgent],
+  );
   const setLoading = useChatStore((s) => s.setLoading);
   const setHistoryLoading = useChatStore((s) => s.setHistoryLoading);
   const setError = useChatStore((s) => s.setError);
@@ -36,22 +44,31 @@ export const ChatPageContent = () => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState<string>("");
 
-  // Mount effect: fetch profile + load initial history for the default agent.
-  // FIX-001 (amended): merge the fetched profile with the persisted map
-  // (hydrated from localStorage before effects run) — PERSISTED wins per-key,
-  // fetched fills gaps. While profileService is mocked it returns SEEDED fake
-  // session ids; letting those win would overwrite the genuine persisted
-  // pointer and getHistory would query a nonexistent session. This precedence
-  // MUST be revisited when profileService goes real (server becomes truth).
+  // BIM-004 (D4): fetch the agent's session index; a persisted pointer with
+  // no matching row is adopted as a "Restored chat" entry — nothing orphaned.
+  const loadSessionListFor = async (agent: AgentName) => {
+    let list = await sessionIndexService.listSessions(agent);
+    const pointer = useChatStore.getState().agentSessions[agent];
+    if (pointer && !list.some((s) => s.adk_session_id === pointer)) {
+      const adopted = await sessionIndexService.createSession(
+        agent,
+        pointer,
+        "Restored chat",
+      );
+      if (adopted) list = [adopted, ...list];
+    }
+    setSessionList(agent, list);
+  };
+
+  // Mount effect (BIM-004): load the session INDEX for the default agent
+  // (with D4 adoption), then the active session's history. profileService is
+  // out of the chat path (D1) — the chat_sessions index is authority; the
+  // persisted map is only the "last active session per agent" pointer cache.
   useEffect(() => {
     if (!userId) return;
-    void profileService.fetchProfile(userId).then(async (fetched) => {
-      const sessions = {
-        ...fetched,
-        ...useChatStore.getState().agentSessions,
-      };
-      setAgentSessions(sessions);
-      const sessionId = sessions[selectedAgent];
+    void (async () => {
+      await loadSessionListFor(selectedAgent);
+      const sessionId = useChatStore.getState().agentSessions[selectedAgent];
       if (sessionId) {
         // FIX-002b: signal the history fetch; getHistory resolves-not-throws,
         // but finally keeps the flag honest regardless.
@@ -70,16 +87,20 @@ export const ChatPageContent = () => {
         setMessagesForAgent(selectedAgent, []);
       }
       hasMountedRef.current = true;
-    });
+    })();
     // selectedAgent intentionally not in deps — mount-only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, setAgentSessions, setMessagesForAgent]);
+  }, [userId, setMessagesForAgent]);
 
-  // Agent-switch effect: lazy-load each agent's history on first visit.
-  // Per-agent retention: if already loaded, just display; don't refetch.
+  // Agent-switch / session-switch effect (BIM-004): lazy-load the session
+  // index on an agent's first visit; (re)fetch history whenever the active
+  // thread is not loaded — activateSession clears it to retrigger this.
   useEffect(() => {
     if (!hasMountedRef.current) return;
     const state = useChatStore.getState();
+    if (state.sessionListByAgent[selectedAgent] === undefined) {
+      void loadSessionListFor(selectedAgent);
+    }
     const existing = state.messagesByAgent[selectedAgent];
     if (existing !== undefined) {
       // already loaded — display in place
@@ -99,7 +120,15 @@ export const ChatPageContent = () => {
       })
       .then((history) => setMessagesForAgent(selectedAgent, history))
       .finally(() => setHistoryLoading(false));
-  }, [selectedAgent, userId, setMessagesForAgent, setHistoryLoading]);
+    // loadSessionListFor is stable-per-render plumbing, not a reactive input.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    selectedAgent,
+    activeSessionId,
+    userId,
+    setMessagesForAgent,
+    setHistoryLoading,
+  ]);
 
   const runSendMessage = async (content: string) => {
     if (!userId) return;
@@ -130,15 +159,33 @@ export const ChatPageContent = () => {
     });
     setLoading(false);
 
-    // Save profile if this was the first message in a new session
+    // BIM-004 (D2): the first successful reply births the index row,
+    // auto-titled from the first user message (D3); later replies bump
+    // updated_at. Index failures never block chat (service degrades).
     if (!existing && response.session_id) {
       setSession(selectedAgent, response.session_id);
-      const currentSessions = useChatStore.getState().agentSessions;
-      void profileService
-        .saveProfile(userId, currentSessions)
-        .catch((err: Error) => {
-          setError(`Profile save warning: ${err.message}`);
+      void sessionIndexService
+        .createSession(
+          selectedAgent,
+          response.session_id,
+          titleFromMessage(content),
+        )
+        .then((entry) => {
+          if (entry) upsertSessionEntry(selectedAgent, entry);
         });
+    } else if (existing) {
+      const entry = useChatStore
+        .getState()
+        .sessionListByAgent[selectedAgent]?.find(
+          (s) => s.adk_session_id === existing,
+        );
+      if (entry) {
+        void sessionIndexService.touchSession(entry.id);
+        upsertSessionEntry(selectedAgent, {
+          ...entry,
+          updated_at: new Date().toISOString(),
+        });
+      }
     }
   };
 

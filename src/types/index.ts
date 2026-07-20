@@ -59,6 +59,22 @@ export interface ProfileRow {
   agent_sessions: AgentSessionMap;
 }
 
+/**
+ * BIM-004 (Amendment A4) — one row of the chat_sessions INDEX.
+ * Index fields ONLY: which sessions exist, never message content. The
+ * transcript lives in ADK's store and arrives via chatService.getHistory.
+ * (`user_id` stays server-side — RLS scopes rows; the client never needs it.)
+ */
+export interface SessionIndexEntry {
+  id: string;
+  agent_name: string;
+  adk_session_id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  archived: boolean;
+}
+
 // =============================================================================
 // Wrapper API — wire shapes (snake_case preserved)
 // =============================================================================
