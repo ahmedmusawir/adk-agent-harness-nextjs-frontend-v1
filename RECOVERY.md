@@ -1,24 +1,24 @@
 # Recovery State
 
-Last action: **BIM-005 Engineer side COMPLETE — green board + ACCEPTANCE_SPEC** —
-2026-07-20 00:25, branch `bim-005` (single-chat lineage; **BIM-004 Projects UX is
-deliberately PARKED on branch `bim-004`, merged nowhere** — Coordinator direction).
-Mission Control is LIVE: GET/PUT `/api/agent/instructions` against GCS with the
-backup-before-write law (versions/{ISO}.bak first; failed backup aborts), ADC
-credentials (zero credential env), instructionsService live mode (components
-byte-untouched). Board: **31 suites / 232 green**, tsc clean, build clean, C-G5 grep
-clean. Baseline entered red (roster-pin again on this lineage) — repaired.
+Last action: **Showcase README built — README.md replaced** — 2026-08-04 21:05,
+branch `main`, clean working tree except new README + response logs. Ran
+`stark-showcase-readme` skill: Phase 1 sweep (factory internals flagged; operator
+override declined clean-room), Phase 2 facts verified (build passes with env,
+tsc clean, 31 suites / 232 tests green), Phase 3 assets supplied (4 Cloudinary
+screenshots, 2-column table), Phase 4 README rendered and written. `npm install`
+was run to enable verification; `node_modules/` is gitignored. Audit: 13
+advisories (1 low / 5 moderate / 7 high) — badge omitted per operator.
 
-Pending: **Coordinator** —
-1. ⚠️ Pre-step: grant the service account WRITE on the bucket
-   (`roles/storage.objectUser`) — documented read-only today. Set `GCS_BUCKET` +
-   `GCS_BASE_FOLDER` in `.env.local`.
-2. Manual gates via `agent_docs/CURRENT_APP/BIM005/ACCEPTANCE_SPEC.md` §3 — headline:
-   **C-G4 the pirate test**.
-3. Commits `BIM-003fix` (re-applied) + `BIM-005a/b/c` (file lists in
-   `agent_docs/RESPONSES/response_2026-07-20_002531_bim005-execution-result.md`).
-4. Still queued: BIM-003 manual gates · FIX-002/FEAT-001 QA report · BIM-002 lessons
-   L-a…L-d · F04 · BIM-004 disposition (parked).
+Pending: **Coordinator / Operator** —
+1. Review README.md, especially screenshot 4 (GHL CRM contact table contains
+   names, emails, and phone numbers that appear production-like — verify before
+   publishing).
+2. Commit/push README.md (copy-paste block in `response_2026-08-04_…_showcase-readme-handoff`).
+3. Deferred: clean-room carve-out + `.gitignore` fence + `.env.example` placeholder
+   style update; operator will handle manually later.
+4. Still queued from prior sessions: BIM-003 manual gates · FIX-002/FEAT-001 QA
+   report · BIM-002 lessons L-a…L-d · F04 · BIM-005 Coordinator commits +
+   SA-write-permission pre-step.
 
 --- (prior state below) ---
 
