@@ -93,7 +93,7 @@ describe("chatStore session reshape (BIM-004)", () => {
       content: "SECRET-CONTENT",
     });
 
-    const raw = localStorage.getItem("adk-session-map") as string;
+    const raw = localStorage.getItem("adk-session-map-mock") as string;
     const stored = JSON.parse(raw);
     expect(Object.keys(stored.state).sort()).toEqual([
       "agentSessions",

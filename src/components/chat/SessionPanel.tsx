@@ -15,10 +15,12 @@ import { useRouter, usePathname } from "next/navigation";
 import { Archive, Check, Pencil, Plus } from "lucide-react";
 
 import { sessionIndexService } from "@/services/sessionIndexService";
-import { useChatStore } from "@/store/chatStore";
+import { useChatStore, useHydrationReady } from "@/store/chatStore";
 import type { SessionIndexEntry } from "@/types";
 
 export const SessionPanel = () => {
+  // FIX-003 (F06): no wrong-agent conversation list before hydration.
+  const ready = useHydrationReady();
   const selectedAgent = useChatStore((s) => s.selectedAgent);
   const sessions = useChatStore(
     (s) => s.sessionListByAgent[s.selectedAgent],
@@ -35,6 +37,9 @@ export const SessionPanel = () => {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+
+  // All hooks above this line (rules of hooks); gate the render only.
+  if (!ready) return null;
 
   const goToChat = () => {
     if (!pathname.startsWith("/chat")) router.push("/chat");

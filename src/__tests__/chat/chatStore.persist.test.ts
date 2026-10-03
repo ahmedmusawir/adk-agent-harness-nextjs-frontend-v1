@@ -9,7 +9,7 @@
  * or absent stored values degrade to today's behavior; no `window` → no crash.
  */
 
-const STORAGE_KEY = "adk-session-map";
+const STORAGE_KEY = "adk-session-map-mock";
 
 describe("chatStore persistence (FIX-001)", () => {
   beforeEach(() => {

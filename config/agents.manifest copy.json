@@ -1,0 +1,14 @@
+{
+  "bundles": [
+    { "id": "v1", "label": "ADK Bundle v1", "urlEnv": "ADK_BUNDLE_URL_V1" },
+    { "id": "v2-local", "label": "Harness v2 (local)", "urlEnv": "ADK_BUNDLE_URL_V2_LOCAL" }
+  ],
+  "agents": [
+    { "name": "greeting_agent", "bundle": "v1", "label": "Greeting Agent" },
+    { "name": "jarvis_agent", "bundle": "v1", "label": "Jarvis" },
+    { "name": "calc_agent", "bundle": "v1", "label": "Calc Agent" },
+    { "name": "product_agent", "bundle": "v1", "label": "Product Agent" },
+    { "name": "ghl_mcp_agent", "bundle": "v1", "label": "GHL CRM Agent" },
+    { "name": "moose_mcp_agent", "bundle": "v1", "label": "MOOSE CRM Agent" }
+  ]
+}

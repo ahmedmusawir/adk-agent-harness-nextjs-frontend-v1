@@ -14,6 +14,7 @@
  * @see agent_docs/CURRENT_APP/FIX001/CLAUDE.md
  */
 
+import { useEffect, useState } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -28,6 +29,34 @@ import type {
 // BIM-003: the default agent is the manifest's first entry (order is
 // meaningful). FIX-002's persisted selection still wins over this on reload.
 const DEFAULT_AGENT: AgentName = MANIFEST_DEFAULT_AGENT;
+
+// FIX-003 (F09): each mode gets its OWN persisted namespace — mock pointers
+// must never poison live sessions, and switching modes must never destroy the
+// other world's state. Same fail-safe default as the services: anything but
+// 'live' is mock.
+const PERSIST_MODE =
+  process.env.NEXT_PUBLIC_CHAT_MODE === "live" ? "live" : "mock";
+const PERSIST_KEY = `adk-session-map-${PERSIST_MODE}`;
+const LEGACY_PERSIST_KEY = "adk-session-map";
+
+// Migration kindness: a pre-FIX-003 browser carries the legacy shared key.
+// On LIVE boot only, adopt it once into the live namespace (mock never
+// adopts — mock pointers were the poison). The legacy key is left in place,
+// dead. One-time, silent beyond a console.info.
+if (typeof window !== "undefined" && PERSIST_MODE === "live") {
+  try {
+    const legacy = window.localStorage.getItem(LEGACY_PERSIST_KEY);
+    if (legacy !== null && window.localStorage.getItem(PERSIST_KEY) === null) {
+      window.localStorage.setItem(PERSIST_KEY, legacy);
+      // eslint-disable-next-line no-console
+      console.info(
+        "[chatStore] FIX-003: adopted legacy adk-session-map into adk-session-map-live",
+      );
+    }
+  } catch {
+    // storage unavailable — nothing to adopt
+  }
+}
 
 interface ChatState {
   selectedAgent: AgentName;
@@ -44,6 +73,13 @@ interface ChatState {
   isLoading: boolean;
   /** True while a history fetch is in flight (FIX-002b) — never persisted. */
   isHistoryLoading: boolean;
+  /**
+   * True once persist has rehydrated (FIX-003 F06) — never persisted, NOT in
+   * INITIAL_STATE (reset() must not re-suppress the UI). Consume via
+   * useHydrationReady(), not directly (SSR-mismatch safety).
+   */
+  _hasHydrated: boolean;
+  setHasHydrated: (hydrated: boolean) => void;
   error: string | null;
 
   setSelectedAgent: (name: AgentName) => void;
@@ -84,6 +120,8 @@ export const useChatStore = create<ChatState>()(
   persist(
     (set) => ({
       ...INITIAL_STATE,
+      _hasHydrated: false,
+      setHasHydrated: (hydrated) => set({ _hasHydrated: hydrated }),
       setSelectedAgent: (name) =>
         set((state) => ({
           selectedAgent: name,
@@ -157,11 +195,16 @@ export const useChatStore = create<ChatState>()(
       reset: () => set(INITIAL_STATE),
     }),
     {
-      name: "adk-session-map",
+      name: PERSIST_KEY, // FIX-003 (F09): mode-namespaced
       // SSR guard: on the server `window` throws, createJSONStorage catches
       // it and returns undefined storage → store degrades to in-memory
       // exactly as before FIX-001.
       storage: createJSONStorage(() => window.localStorage),
+      // FIX-003 (F06): flip the hydration flag when restore completes. On the
+      // server hydration never runs, so the flag stays false there.
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
       // F4 fence: ONLY the agent→session bookmark and the selected agent are
       // persisted (FIX-002a). Message content (messagesByAgent) must never
       // reach localStorage.
@@ -172,3 +215,18 @@ export const useChatStore = create<ChatState>()(
     },
   ),
 );
+
+/**
+ * FIX-003 (F06): the mismatch-safe hydration gate. `_hasHydrated` flips
+ * synchronously when persist restores — but the SERVER never hydrates, so
+ * gating on the flag alone would make the first client paint differ from the
+ * server HTML (that mismatch IS part of the wrong-agent flash). The two-pass
+ * `mounted` check keeps first paint identical to the server (loading idiom),
+ * then reveals the restored agent one frame later. Greeting never flashes.
+ */
+export function useHydrationReady(): boolean {
+  const hasHydrated = useChatStore((s) => s._hasHydrated);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted && hasHydrated;
+}

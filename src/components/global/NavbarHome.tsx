@@ -88,9 +88,9 @@ const NavbarHome = () => {
 
       {/* NAVIGATION */}
       <nav className="hidden sm:ml-6 sm:flex flex-grow justify-center items-center">
-        <NavLink href="/members-portal">Members' Portal</NavLink>
-        <NavLink href="/admin-portal">Admin Portal</NavLink>
-        <NavLink href="/superadmin-portal">Super Admin Portal</NavLink>
+        {/* <NavLink href="/members-portal">Members' Portal</NavLink> */}
+        {/* <NavLink href="/admin-portal">Admin Portal</NavLink> */}
+        {/* <NavLink href="/superadmin-portal">Super Admin Portal</NavLink> */}
       </nav>
 
       {/* DARK MODE BUTTON */}

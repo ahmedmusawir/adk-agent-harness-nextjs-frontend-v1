@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-20 13:51 UTC — [CC] Claude Code
+
+- **Updated:** `src/store/chatStore.ts` — FIX-003: persist key mode-namespaced (`adk-session-map-live`/`-mock`) with LIVE-only legacy adoption (F09); `_hasHydrated` flag + mismatch-safe `useHydrationReady()` gate (F06)
+- **Updated:** `src/app/(cyberize)/chat/ChatPageContent.tsx` + `SessionPanel.tsx` — nothing agent-specific renders or fetches until hydration; loading idiom shown instead (no wrong-agent flash)
+- **Tests:** new `chatStore.modeSplit.test.ts` (9) + `ChatPageContent.hydration.test.tsx` (2); key literal updated in 2 chatStore test files — board 36 suites / 263 green
+- **Created:** `agent_docs/CURRENT_APP/FIX003/ACCEPTANCE_SPEC.md`
+- **Reason:** FIX-003 (QA F06 + F09, Architect-adjudicated) — approved plan `agent_docs/RESPONSES/response_2026-07-20_193942_fix003-preflight-plan.md`
+
 ## 2026-07-19 18:25 UTC — [CC] Claude Code
 
 - **Created:** `src/app/api/agent/instructions/{route.ts,_lib/gcsInstructions.ts}` — BIM-005: Mission Control LIVE. GET/PUT instructions against GCS with the backup-before-write law (versions/{ISO}.bak first; failed backup aborts the save); 400 unknown agent / 500 naming the env var / 502; ADC credentials (zero credential env vars)

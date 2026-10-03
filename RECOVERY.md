@@ -1,6 +1,33 @@
 # Recovery State
 
-Last action: **MERGE — `bim-004` into `bim-005`** (2026-07-20). The branch mix-up is
+**⏸️ REPO PARKED 2026-07-26 — READ `session_2026-07-26.md` FIRST.** It is the
+complete re-entry guide: branch topology, module ledger, env/infra state,
+architecture cheat-sheet, and the full pending queue. The two headline facts:
+(1) **FIX-003 is engineer-complete but UNCOMMITTED** in the `bim-005` working tree
+(commit plan in `response_2026-07-20_195136_fix003-execution-result.md`);
+(2) **`main` @ `a2da443` does NOT contain BIM-004** — the merge `41fda97` lives only
+on `bim-005`; fast-forward main AFTER committing FIX-003. Last verified board:
+36 suites / 263 green (07-20) — re-run before trusting.
+
+--- (last working state below) ---
+
+Last action: **FIX-003 Engineer side COMPLETE — green board + ACCEPTANCE_SPEC** —
+2026-07-20 19:51, branch `bim-005`. Two QA state defects dead: F09 (persistence now
+mode-namespaced `adk-session-map-live`/`-mock`, LIVE-only legacy adoption, mock never
+adopts) + F06 (hydration gate — mismatch-safe `useHydrationReady()`, loading idiom
+until the persisted selection restores; no wrong-agent flash in chat or panel).
+Board: **36 suites / 263 green**, tsc clean, build clean.
+
+Pending: **Coordinator** — manual gates H1–H4 via
+`agent_docs/CURRENT_APP/FIX003/ACCEPTANCE_SPEC.md` (headline: the mode-flip walk +
+throttled-refresh flash check), then commits FIX-003a/b/c (file lists in
+`agent_docs/RESPONSES/response_2026-07-20_195136_fix003-execution-result.md`).
+Broader backlog unchanged (BIM-003/004/005 manual passes in progress on this branch;
+after gates → fast-forward `bim-005` → `main`).
+
+--- (prior state below) ---
+
+Earlier: **MERGE — `bim-004` into `bim-005`** (2026-07-20). The branch mix-up is
 resolved: this line now carries **BOTH** BIM-004 (Projects UX: chat_sessions index,
 sessionIndexService, SessionPanel — New Chat / resume / rename / archive, D4 adoption)
 AND BIM-005 (Mission Control LIVE: GCS instructions with the backup-before-write law,

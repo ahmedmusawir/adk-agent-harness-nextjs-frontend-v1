@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useAuthStore } from "@/store/useAuthStore";
-import { useChatStore } from "@/store/chatStore";
+import { useChatStore, useHydrationReady } from "@/store/chatStore";
 import { chatService } from "@/services/chatService";
 import {
   sessionIndexService,
@@ -29,6 +29,9 @@ export const ChatPageContent = () => {
   const setLoading = useChatStore((s) => s.setLoading);
   const setHistoryLoading = useChatStore((s) => s.setHistoryLoading);
   const setError = useChatStore((s) => s.setError);
+  // FIX-003 (F06): nothing agent-specific renders or fetches until the
+  // persisted selection has hydrated — no wrong-agent flash, no wrong fetch.
+  const ready = useHydrationReady();
 
   const userId =
     user && typeof user === "object" && "id" in user
@@ -65,7 +68,7 @@ export const ChatPageContent = () => {
   // out of the chat path (D1) — the chat_sessions index is authority; the
   // persisted map is only the "last active session per agent" pointer cache.
   useEffect(() => {
-    if (!userId) return;
+    if (!ready || !userId) return; // FIX-003: wait for the persisted selection
     void (async () => {
       await loadSessionListFor(selectedAgent);
       const sessionId = useChatStore.getState().agentSessions[selectedAgent];
@@ -88,15 +91,15 @@ export const ChatPageContent = () => {
       }
       hasMountedRef.current = true;
     })();
-    // selectedAgent intentionally not in deps — mount-only.
+    // selectedAgent intentionally not in deps — mount-only (post-hydration).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, setMessagesForAgent]);
+  }, [ready, userId, setMessagesForAgent]);
 
   // Agent-switch / session-switch effect (BIM-004): lazy-load the session
   // index on an agent's first visit; (re)fetch history whenever the active
   // thread is not loaded — activateSession clears it to retrigger this.
   useEffect(() => {
-    if (!hasMountedRef.current) return;
+    if (!ready || !hasMountedRef.current) return; // FIX-003 gate
     const state = useChatStore.getState();
     if (state.sessionListByAgent[selectedAgent] === undefined) {
       void loadSessionListFor(selectedAgent);
@@ -123,6 +126,7 @@ export const ChatPageContent = () => {
     // loadSessionListFor is stable-per-render plumbing, not a reactive input.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    ready,
     selectedAgent,
     activeSessionId,
     userId,
@@ -267,6 +271,25 @@ export const ChatPageContent = () => {
     );
     // Future: POST to feedback endpoint.
   };
+
+  // FIX-003 (F06): until the persisted selection hydrates, show the FIX-002
+  // loading idiom instead of any agent-specific content. Server HTML and the
+  // first client paint both render this branch — no flash, no SSR mismatch.
+  if (!ready) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div
+            className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 animate-pulse"
+            role="status"
+            aria-label="Loading conversation"
+          >
+            <span>Loading conversation…</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
